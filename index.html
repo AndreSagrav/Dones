@@ -997,12 +997,40 @@ const ESCENARIOS = [
   { id:'administracion_3', titulo:'Evento desorganizado', texto:'Un evento importante es en dos semanas y nada está listo: no hay cronograma, no hay responsables claros, no hay lista de recursos. ¿Qué haces?', opciones:['Me preocupo pero no es mi responsabilidad','Espero instrucciones de quien esté a cargo','Agarro papel y lápiz y empiezo a hacer listas, cronograma y asignaciones','Confío en que todo saldrá bien de alguna forma'], correcta:2 }
 ];
 
+let ESCENARIOS = [];
+
 let respuestas = {};
-let totalPreguntas = ESCENARIOS.length;
+let totalPreguntas = 0;
 let datosUsuario = {};
 
 const SUPABASE_URL = 'https://hexrnglihkebatlshzmg.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhleHJuZ2xpaGtlYmF0bHNoem1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDQ1NDMsImV4cCI6MjEwMjQ4MDU0M30.eyfDkc6pVhlkGeI88idWLiXX-hSwI5IST8rzZegbFro';
+
+async function cargarEscenarios() {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/escenarios?order=orden.asc`, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+      }
+    });
+    const data = await res.json();
+    ESCENARIOS = data.map(e => ({
+      id: e.don_id + '_' + e.orden,
+      don_id: e.don_id,
+      titulo: e.titulo,
+      texto: e.texto,
+      opciones: e.opciones,
+      correcta: e.correcta
+    }));
+    totalPreguntas = ESCENARIOS.length;
+  } catch (err) {
+    console.error('Error cargando escenarios:', err);
+    document.querySelector('.hero').innerHTML = '<p style="color:var(--amber);padding:40px;">Error al cargar la evaluación. Por favor recarga la página.</p>';
+  }
+}
+
+cargarEscenarios();
 
 function goToForm() {
   document.getElementById('sec-hero').style.display = 'none';
@@ -1246,7 +1274,7 @@ function calcularResultados() {
   dones.forEach(d => { scoresPorDon[d] = 0; });
 
   ESCENARIOS.forEach(esc => {
-    const donKey = esc.id.replace(/_\d+$/, '');
+    const donKey = esc.don_id || esc.id.replace(/_\d+$/, '');
     if (respuestas[esc.id] === esc.correcta) {
       scoresPorDon[donKey] += 5;
     }
