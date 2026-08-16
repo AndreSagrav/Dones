@@ -1258,22 +1258,23 @@ function dibujarRadar(scores) {
       datasets: [{
         label: 'Mis dones',
         data: data,
-        backgroundColor: 'rgba(201,146,42,0.35)',
-        borderColor: '#F0C060',
+        backgroundColor: 'rgba(232,112,26,0.45)',
+        borderColor: '#E8701A',
         borderWidth: 3,
         pointBackgroundColor: '#F0C060',
         pointBorderColor: '#1A1208',
         pointBorderWidth: 2,
-        pointRadius: 6,
-        pointHoverRadius: 8,
-        pointHoverBackgroundColor: '#E8701A',
-        fill: true,
-        tension: 0.1
+        pointRadius: 7,
+        pointHoverRadius: 10,
+        pointHoverBackgroundColor: '#FFFFFF',
+        pointHoverBorderColor: '#E8701A',
+        fill: true
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: true,
+      aspectRatio: 1.1,
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -1296,16 +1297,19 @@ function dibujarRadar(scores) {
           max: 15,
           ticks: {
             stepSize: 5,
-            color: '#5A4A32',
-            font: { family: 'Space Grotesk', size: 10 },
-            backdropColor: 'transparent'
+            color: '#7A6A52',
+            font: { family: 'Space Grotesk', size: 11 },
+            backdropColor: 'transparent',
+            showLabelBackdrop: true,
+            backdropColor: '#231809',
+            backdropPadding: 4
           },
-          grid: { color: '#3A2A14', lineWidth: 1 },
-          angleLines: { color: '#3A2A14', lineWidth: 1 },
+          grid: { color: 'rgba(74,58,34,0.6)', lineWidth: 1 },
+          angleLines: { color: 'rgba(74,58,34,0.6)', lineWidth: 1 },
           pointLabels: {
             color: '#F0C060',
-            font: { family: 'Space Grotesk', size: 13, weight: 'bold' },
-            padding: 12
+            font: { family: 'Space Grotesk', size: 14, weight: 'bold' },
+            padding: 16
           }
         }
       }
