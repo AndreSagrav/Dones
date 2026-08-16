@@ -677,6 +677,7 @@ function login() {
   const err = document.getElementById('loginError');
   if (pass === ADMIN_PASS) {
     err.textContent = '';
+    sessionStorage.setItem('adminAuth', 'true');
     document.getElementById('loginWrap').style.display = 'none';
     document.getElementById('dashboard').classList.add('visible');
     cargarResultados();
@@ -686,9 +687,17 @@ function login() {
 }
 
 function logout() {
+  sessionStorage.removeItem('adminAuth');
   document.getElementById('adminPass').value = '';
   document.getElementById('dashboard').classList.remove('visible');
   document.getElementById('loginWrap').style.display = 'flex';
+}
+
+// Auto-login si ya estaba autenticado
+if (sessionStorage.getItem('adminAuth') === 'true') {
+  document.getElementById('loginWrap').style.display = 'none';
+  document.getElementById('dashboard').classList.add('visible');
+  cargarResultados();
 }
 
 async function cargarResultados() {
