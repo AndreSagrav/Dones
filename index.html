@@ -884,8 +884,10 @@
 
   <div id="dones-container"></div>
 
-  <div class="nav-bottom">
-    <button class="btn-secondary" onclick="goToStep(1)">← Instrucciones</button>
+  <div class="nav-bottom" id="eval-nav">
+    <button class="btn-secondary" id="btn-prev" onclick="cambiarPregunta(-1)" style="display:none;">← Anterior</button>
+    <span id="pregunta-counter" style="font-family:'Space Grotesk',sans-serif;font-size:13px;color:var(--muted);"></span>
+    <button class="btn-primary" id="btn-next" onclick="cambiarPregunta(1)" disabled>Siguiente →</button>
     <button class="btn-primary" id="btn-resultados" onclick="calcularResultados()" style="display:none">Ver mis resultados →</button>
     <p id="msg-pendientes" style="font-size:13px; color:var(--amber); font-family:'Space Grotesk',sans-serif; text-align:center; width:100%;"></p>
   </div>
@@ -1100,6 +1102,8 @@ function goToStep(step) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+let preguntaActual = 0;
+
 function renderDones() {
   const container = document.getElementById('dones-container');
   if (container.innerHTML !== '') return;
@@ -1108,6 +1112,7 @@ function renderDones() {
     const card = document.createElement('div');
     card.className = 'don-card';
     card.id = 'esc-' + esc.id;
+    card.style.display = 'none';
 
     const letras = ['A', 'B', 'C', 'D'];
     const opcionesHTML = esc.opciones.map((op, oi) => {
@@ -1125,6 +1130,57 @@ function renderDones() {
       <div class="opciones-list">${opcionesHTML}</div>`;
     container.appendChild(card);
   });
+
+  mostrarPregunta(0);
+}
+
+function mostrarPregunta(index) {
+  preguntaActual = index;
+  const total = ESCENARIOS.length;
+
+  // Mostrar solo la pregunta actual
+  ESCENARIOS.forEach((esc, ei) => {
+    const card = document.getElementById('esc-' + esc.id);
+    if (card) card.style.display = (ei === index) ? 'block' : 'none';
+  });
+
+  // Counter
+  document.getElementById('pregunta-counter').textContent = `${index + 1} de ${total}`;
+
+  // Botones
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+  const btnRes = document.getElementById('btn-resultados');
+
+  btnPrev.style.display = (index > 0) ? 'inline-flex' : 'none';
+
+  // ¿Respondida?
+  const escActual = ESCENARIOS[index];
+  const respondida = respuestas[escActual.id] !== undefined;
+
+  if (index === total - 1) {
+    // Última pregunta
+    btnNext.style.display = 'none';
+    if (respondida && Object.keys(respuestas).length === total) {
+      btnRes.style.display = 'inline-flex';
+    } else {
+      btnRes.style.display = 'none';
+    }
+  } else {
+    btnNext.style.display = 'inline-flex';
+    btnRes.style.display = 'none';
+  }
+
+  btnNext.disabled = !respondida;
+
+  updateProgress();
+}
+
+function cambiarPregunta(dir) {
+  const nueva = preguntaActual + dir;
+  if (nueva < 0 || nueva >= ESCENARIOS.length) return;
+  mostrarPregunta(nueva);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function setRespuesta(escId, optIndex, btn) {
@@ -1132,7 +1188,16 @@ function setRespuesta(escId, optIndex, btn) {
   const card = btn.closest('.don-card');
   card.querySelectorAll('.opcion-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
-  updateProgress();
+
+  // Avance automático tras responder
+  setTimeout(() => {
+    if (preguntaActual < ESCENARIOS.length - 1) {
+      mostrarPregunta(preguntaActual + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      mostrarPregunta(preguntaActual);
+    }
+  }, 350);
 }
 
 function updateProgress() {
@@ -1141,14 +1206,10 @@ function updateProgress() {
   document.getElementById('progressFill').style.width = pct + '%';
   document.getElementById('progressPct').textContent = pct + '%';
 
-  const btnRes = document.getElementById('btn-resultados');
   const msgPend = document.getElementById('msg-pendientes');
-
   if (respondidas === totalPreguntas) {
-    btnRes.style.display = 'inline-flex';
     msgPend.textContent = '';
   } else {
-    btnRes.style.display = 'none';
     msgPend.textContent = `Faltan ${totalPreguntas - respondidas} respuestas para ver tus resultados.`;
   }
 }
@@ -1320,6 +1381,8 @@ function calcularResultados() {
 function reiniciar() {
   respuestas = {};
   datosUsuario = {};
+  preguntaActual = 0;
+  intentosForm = 0;
   document.getElementById('dones-container').innerHTML = '';
   document.getElementById('btn-resultados').style.display = 'none';
   document.getElementById('msg-pendientes').textContent = '';
