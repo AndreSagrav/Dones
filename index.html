@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Descubre tus Dones — Lifehouse PLD</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold:     #C9922A;
+    --gold-lt:  #F0C060;
+    --amber:    #E8701A;
+    --deep:     #1A1208;
+    --warm:     #2C1F0E;
+    --cream:    #FBF5EA;
+    --muted:    #7A6A52;
+    --white:    #FFFFFF;
+    --card-bg:  #231809;
+    --step-inactive: #3A2A14;
+    --radius:   16px;
+    --transition: 0.35s cubic-bezier(.4,0,.2,1);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  :focus-visible {
+    outline: 2px solid var(--gold-lt);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--deep);
+    color: var(--cream);
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 24px;
+    position: relative;
+    background: radial-gradient(ellipse at 50% 30%, #3D2208 0%, var(--deep) 70%);
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C9922A' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  .flame-icon {
+    font-size: 72px;
+    margin-bottom: 24px;
+    animation: pulse 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 24px #C9922A88);
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 24px #C9922A88); }
+    50% { transform: scale(1.08); filter: drop-shadow(0 0 40px #F0C060BB); }
+  }
+
+  .hero-eyebrow {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(40px, 8vw, 88px);
+    font-weight: 900;
+    line-height: 1.12;
+    color: var(--white);
+    margin-bottom: 12px;
+  }
+
+  .hero h1 span {
+    color: var(--gold-lt);
+    display: block;
+  }
+
+  .hero-sub {
+    font-size: clamp(16px, 2.5vw, 20px);
+    color: var(--muted);
+    max-width: 560px;
+    line-height: 1.6;
+    margin: 20px auto 48px;
+    font-weight: 300;
+  }
+
+  .steps-nav {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 56px;
+    background: var(--warm);
+    border-radius: 100px;
+    padding: 6px;
+    border: 1px solid #3A2A14;
+  }
+
+  .step-pill {
+    padding: 10px 24px;
+    border-radius: 100px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    transition: var(--transition);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .step-pill:hover {
+    color: var(--gold-lt);
+    background: rgba(201,146,42,0.1);
+  }
+
+  .step-pill.active {
+    background: var(--gold);
+    color: var(--deep);
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, var(--gold), var(--amber));
+    color: var(--deep);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 18px 40px;
+    border-radius: 100px;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 8px 32px #C9922A44;
+    text-decoration: none;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 48px #C9922A66;
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    color: var(--cream);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 16px 32px;
+    border-radius: 100px;
+    border: 1.5px solid #3A2A14;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--gold);
+    color: var(--gold-lt);
+  }
+
+  /* ── SECTIONS ── */
+  .section { display: none; padding: 60px 24px 80px; max-width: 860px; margin: 0 auto; scroll-margin-top: 70px; }
+  .section.active { display: block; animation: fadeUp 0.5s ease both; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-header { text-align: center; margin-bottom: 48px; }
+
+  .section-badge {
+    display: inline-block;
+    background: var(--warm);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 6px 18px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+
+  .section h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.15;
+    margin-bottom: 16px;
+  }
+
+  .section h2 em {
+    color: var(--gold-lt);
+    font-style: normal;
+  }
+
+  .section-desc {
+    font-size: 17px;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* ── INSTRUCCIONES ── */
+  .instructions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px;
+    margin-bottom: 48px;
+  }
+
+  .instr-card {
+    background: var(--card-bg);
+    border: 1px solid #3A2A14;
+    border-radius: var(--radius);
+    padding: 40px 32px 36px;
+    text-align: center;
+    transition: var(--transition);
+  }
+
+  .instr-card:hover { border-color: var(--gold); transform: translateY(-4px); }
+
+  .instr-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 64px;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 16px;
+    opacity: 0.25;
+  }
+
+  .instr-card h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 10px;
+  }
+
+  .instr-card p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 240px;
+    margin: 0 auto;
+  }
+
+  /* ── DON CARDS ── */
+  .don-card {
+    background: var(--card-bg);
+    border: 1px solid #3A2A14;
+    border-radius: var(--radius);
+    padding: 32px;
+    margin-bottom: 24px;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .don-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--amber));
+    opacity: 0;
+    transition: var(--transition);
+  }
+
+  .don-card:hover { border-color: #5A3A1A; }
+  .don-card:hover::before { opacity: 1; }
+
+  /* ── SCENARIO OPTIONS ── */
+  .escenario-titulo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .escenario-texto {
+    font-size: 16px;
+    color: var(--cream);
+    line-height: 1.7;
+    margin-bottom: 24px;
+    font-weight: 400;
+  }
+
+  .opciones-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .opcion-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    text-align: left;
+    padding: 16px 20px;
+    border-radius: 12px;
+    border: 1.5px solid #3A2A14;
+    background: var(--warm);
+    color: #C4B49A;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .opcion-btn > span:last-child {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .opcion-btn:hover {
+    border-color: var(--gold);
+    color: var(--cream);
+    background: #3D2208;
+  }
+
+  .opcion-btn.selected {
+    background: linear-gradient(135deg, #2C1F0E, #3D2208);
+    border-color: var(--gold);
+    color: var(--white);
+    box-shadow: 0 4px 16px #C9922A22;
+  }
+
+  .opcion-letra {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #3A2A14;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    flex-shrink: 0;
+    transition: var(--transition);
+  }
+
+  .opcion-btn.selected .opcion-letra {
+    background: var(--gold);
+    color: var(--deep);
+  }
+
+  /* ── PROGRESS ── */
+  .progress-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--deep);
+    border-bottom: 1px solid #2C1F0E;
+    padding: 12px 24px;
+    display: none;
+  }
+
+  .progress-wrap.visible { display: block; }
+
+  .progress-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .progress-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .progress-bar-bg {
+    flex: 1;
+    height: 6px;
+    background: #2C1F0E;
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--amber));
+    border-radius: 100px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .progress-pct {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gold);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  /* ── RESULTS ── */
+  .radar-wrap {
+    background: var(--card-bg);
+    border: 1px solid #3A2A14;
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .radar-wrap canvas {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .result-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 40px; }
+
+  .result-card {
+    background: var(--card-bg);
+    border: 1px solid #3A2A14;
+    border-radius: 14px;
+    padding: 20px 24px;
+    transition: var(--transition);
+  }
+
+  .result-card.is-top { border-color: var(--gold); }
+
+  .result-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+
+  .result-rank {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--gold);
+    opacity: 0.45;
+    min-width: 24px;
+  }
+
+  .result-rank.is-top { opacity: 1; font-size: 24px; }
+
+  .result-icon { font-size: 20px; flex-shrink: 0; }
+
+  .result-info { flex: 1; min-width: 0; }
+
+  .result-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--cream);
+  }
+
+  .result-name.is-top { font-size: 16px; color: var(--white); }
+
+  .result-type {
+    font-size: 10px;
+    color: var(--gold);
+    font-family: 'Space Grotesk', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .result-score {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gold-lt);
+    flex-shrink: 0;
+  }
+
+  .result-bar {
+    height: 8px;
+    background: #2C1F0E;
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .result-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    background: linear-gradient(90deg, var(--gold), var(--amber));
+    transition: width 1s ease;
+  }
+
+  .top-don-card {
+    background: linear-gradient(135deg, #2C1F0E, #3D2208);
+    border: 1px solid var(--gold);
+    border-radius: var(--radius);
+    padding: 32px;
+    margin-bottom: 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .top-don-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, #C9922A22, transparent 70%);
+    pointer-events: none;
+  }
+
+  .top-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+
+  .top-don-name {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 6vw, 52px);
+    font-weight: 900;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .top-don-desc {
+    font-size: 15px;
+    color: #C4B49A;
+    line-height: 1.6;
+    max-width: 500px;
+    margin: 0 auto 24px;
+  }
+
+  /* ── REFLEXION FINAL ── */
+  .reflexion-wrap {
+    background: var(--card-bg);
+    border: 1px solid #3A2A14;
+    border-radius: var(--radius);
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+
+  .reflexion-wrap h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--gold-lt);
+    margin-bottom: 16px;
+  }
+
+  .reflexion-question {
+    font-size: 16px;
+    color: var(--cream);
+    line-height: 1.7;
+    margin-bottom: 16px;
+    padding-left: 16px;
+    border-left: 3px solid var(--gold);
+  }
+
+  .reflexion-hint {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  /* ── NAV BOTTOM ── */
+  .nav-bottom {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 40px 24px;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 32px 24px;
+    border-top: 1px solid #2C1F0E;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    color: var(--step-inactive);
+    letter-spacing: 1px;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .hero { padding: 48px 20px; }
+    .flame-icon { font-size: 56px; margin-bottom: 16px; }
+    .hero-sub { margin: 16px auto 36px; }
+    .steps-nav { padding: 4px; margin-bottom: 40px; }
+    .step-pill { padding: 8px 16px; font-size: 11px; }
+    .section { padding: 48px 20px 64px; }
+    .section h2 { font-size: clamp(24px, 7vw, 40px); }
+    .don-card { padding: 24px; }
+    .escenario-texto { font-size: 15px; }
+    .instructions-grid { gap: 20px; }
+    .instr-card { padding: 28px 20px 24px; }
+    .instr-num { font-size: 48px; }
+    .nav-bottom { gap: 12px; padding: 32px 20px; }
+    .btn-primary { padding: 16px 28px; font-size: 14px; }
+    .btn-secondary { padding: 14px 24px; font-size: 13px; }
+  }
+
+  @media (max-width: 480px) {
+    .hero { padding: 40px 16px; }
+    .flame-icon { font-size: 48px; }
+    .hero-eyebrow { font-size: 10px; letter-spacing: 3px; }
+    .steps-nav { margin-bottom: 32px; flex-wrap: wrap; justify-content: center; gap: 4px; }
+    .step-pill { padding: 6px 14px; font-size: 10px; }
+    .section { padding: 40px 16px 56px; scroll-margin-top: 60px; }
+    .section-header { margin-bottom: 32px; }
+    .don-card { padding: 18px; }
+    .escenario-texto { font-size: 14px; }
+    .opcion-btn { padding: 12px 14px; font-size: 14px; }
+    .instructions-grid { grid-template-columns: 1fr; }
+    .btn-primary { padding: 14px 24px; font-size: 13px; width: 100%; justify-content: center; }
+    .btn-secondary { padding: 12px 20px; font-size: 12px; }
+    .nav-bottom { flex-direction: column; align-items: stretch; }
+    .top-don-card { padding: 24px 16px; }
+    .reflexion-wrap { padding: 20px; }
+    .radar-wrap { padding: 8px; }
+  }
+
+  /* ── REDUCED MOTION ── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    html { scroll-behavior: auto; }
+  }
+
+  /* ── PRINT ── */
+  @media print {
+    body { background: #fff; color: #1A1208; }
+    .hero { background: #fff; min-height: auto; padding: 20px 0; }
+    .hero::before { display: none; }
+    .hero h1, .hero h1 span, .section h2, .section h2 em { color: #1A1208; }
+    .hero-sub, .section-desc, .section-badge, .hero-eyebrow { color: #5A4A32; }
+    .progress-wrap, .nav-bottom, .steps-nav, .btn-primary, .btn-secondary,
+    footer, .flame-icon { display: none !important; }
+    .section { display: block !important; padding: 16px 0; break-inside: avoid; }
+    .section.active { animation: none; }
+    .don-card, .top-don-card, .reflexion-wrap, .instr-card, .radar-wrap,
+    .result-list > div {
+      background: #fff; border: 1px solid #C9922A; box-shadow: none;
+    }
+    .don-card::before, .top-don-card::after { display: none; }
+    .top-don-name, .instr-card h3, .result-list .result-name,
+    .reflexion-wrap h3, .reflexion-question { color: #1A1208; }
+    .statement-text, .top-don-desc, .reflexion-hint { color: #5A4A32; }
+    .opcion-btn { background: #fff; border-color: #ccc; color: #666; }
+    .opcion-btn.selected { background: #F5E6C8; border-color: #C9922A; color: #1A1208; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .opcion-btn.selected .opcion-letra { background: #C9922A; color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .result-bar-fill, .progress-bar-fill { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    @page { margin: 1.5cm; }
+  }
+</style>
+</head>
+<body>
+
+<!-- PROGRESS BAR -->
+<div class="progress-wrap" id="progressWrap">
+  <div class="progress-inner">
+    <span class="progress-label">Progreso</span>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+    <span class="progress-pct" id="progressPct">0%</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SECCIÓN 0: HERO
+════════════════════════════════════════════ -->
+<div id="sec-hero" class="hero">
+  <div class="flame-icon">🔥</div>
+  <p class="hero-eyebrow">Lifehouse PLD · Nivel III</p>
+  <h1>Descubre<span>tus Dones</span></h1>
+  <p class="hero-sub">Una autoevaluación honesta para identificar lo que Dios ha puesto en ti y cómo ponerlo al servicio de los demás.</p>
+
+  <div class="steps-nav" id="stepsNav">
+    <div class="step-pill active" data-step="1" onclick="goToStep(1)">① Instrucciones</div>
+    <div class="step-pill" data-step="2" onclick="goToStep(2)">② Evaluación</div>
+    <div class="step-pill" data-step="3" onclick="goToStep(3)">③ Resultados</div>
+  </div>
+
+  <button class="btn-primary" onclick="goToStep(1)">
+    Comenzar evaluación <span>→</span>
+  </button>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SECCIÓN 1: INSTRUCCIONES
+════════════════════════════════════════════ -->
+<div id="sec-1" class="section">
+  <div class="section-header">
+    <div class="section-badge">Paso 1 de 3</div>
+    <h2>Antes de <em>comenzar</em></h2>
+    <p class="section-desc">Lee estas instrucciones con atención. Son cortas y claras. Seguirlas bien hará que tu resultado sea honesto y útil.</p>
+  </div>
+
+  <div class="instructions-grid">
+    <div class="instr-card">
+      <div class="instr-num">01</div>
+      <h3>Sé honesto contigo mismo</h3>
+      <p>No respondas como "quisieras ser". Responde como eres ahora mismo, hoy.</p>
+    </div>
+    <div class="instr-card">
+      <div class="instr-num">02</div>
+      <h3>Elige tu reacción natural</h3>
+      <p>Cada situación tiene 4 opciones (A, B, C, D). Elige la que mejor describa lo que harías, no lo que "deberías" hacer.</p>
+    </div>
+    <div class="instr-card">
+      <div class="instr-num">03</div>
+      <h3>Responde los 27 escenarios</h3>
+      <p>Hay 27 situaciones cortas. Debes responder todas para ver tu resultado. No te tomará más de 10 minutos.</p>
+    </div>
+    <div class="instr-card">
+      <div class="instr-num">04</div>
+      <h3>No te compares</h3>
+      <p>Este no es un concurso. Cada don es igualmente valioso en el cuerpo de Cristo.</p>
+    </div>
+  </div>
+
+  <div style="margin-bottom: 40px;">
+    <div class="section-badge" style="display:block; text-align:center; margin-bottom: 20px;">¿Cómo funciona?</div>
+    <p style="text-align:center;color:var(--muted);font-size:15px;line-height:1.7;max-width:560px;margin:0 auto;">
+      Leerás una situación concreta y elegirás entre cuatro reacciones posibles.<br>
+      <strong style="color:var(--cream);">No hay respuestas correctas o incorrectas.</strong><br>
+      Solo queremos descubrir cómo reaccionas naturalmente.
+    </p>
+  </div>
+
+  <div class="nav-bottom">
+    <button class="btn-secondary" onclick="goToHero()">← Volver</button>
+    <button class="btn-primary" onclick="goToStep(2)">Comenzar evaluación →</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SECCIÓN 2: EVALUACIÓN
+════════════════════════════════════════════ -->
+<div id="sec-2" class="section">
+  <div class="section-header">
+    <div class="section-badge">Paso 2 de 3</div>
+    <h2>Tu <em>autoevaluación</em></h2>
+    <p class="section-desc">Lee cada situación y elige la opción que mejor refleje tu reacción natural. Responde con honestidad.</p>
+  </div>
+
+  <div id="dones-container"></div>
+
+  <div class="nav-bottom">
+    <button class="btn-secondary" onclick="goToStep(1)">← Instrucciones</button>
+    <button class="btn-primary" id="btn-resultados" onclick="calcularResultados()" style="display:none">Ver mis resultados →</button>
+    <p id="msg-pendientes" style="font-size:13px; color:var(--amber); font-family:'Space Grotesk',sans-serif; text-align:center; width:100%;"></p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SECCIÓN 3: RESULTADOS
+════════════════════════════════════════════ -->
+<div id="sec-3" class="section">
+  <div class="section-header">
+    <div class="section-badge">Paso 3 de 3</div>
+    <h2>Tus <em>resultados</em></h2>
+    <p class="section-desc">Aquí están tus dones y talentos ordenados de mayor a menor puntaje. Reflexiona con honestidad sobre lo que ves.</p>
+  </div>
+
+  <div class="top-don-card" id="top-don-card">
+    <div class="top-label">🏆 Tu don más dominante</div>
+    <div class="top-don-name" id="top-don-name">—</div>
+    <p class="top-don-desc" id="top-don-desc">—</p>
+  </div>
+
+  <div class="radar-wrap" id="radarWrap">
+    <canvas id="radarCanvas" width="520" height="520"></canvas>
+  </div>
+
+  <div class="result-list" id="result-list"></div>
+
+  <div class="section-header" style="margin-top: 48px; margin-bottom: 24px;">
+    <h2>Preguntas de <em>reflexión</em></h2>
+    <p class="section-desc">Basadas en tu resultado. Respóndelas con calma y honestidad.</p>
+  </div>
+
+  <div class="reflexion-wrap">
+    <h3>🎯 Reflexión 1</h3>
+    <p class="reflexion-question" id="reflexion-1">—</p>
+    <p class="reflexion-hint">Piensa en una situación concreta de las últimas dos semanas donde esto se manifestó.</p>
+  </div>
+
+  <div class="reflexion-wrap">
+    <h3>🔥 Reflexión 2</h3>
+    <p class="reflexion-question">Ahora que conoces tu don más dominante, ¿hay alguien específico en tu familia, iglesia o trabajo que necesita exactamente lo que tú tienes? ¿Quién es? ¿Qué harás esta semana para bendecirle con tu don?</p>
+    <p class="reflexion-hint">No respondas en general. Escribe un nombre. Escribe una acción. Escribe una fecha.</p>
+  </div>
+
+  <div class="reflexion-wrap">
+    <h3>⚡ Reflexión 3</h3>
+    <p class="reflexion-question">Mirando tus puntajes más bajos, ¿hay algún don que sientes que Dios quiere desarrollar más en ti, aunque hoy no sea tu fuerte? ¿Qué primer paso podrías dar esta semana para comenzar a ejercitarlo?</p>
+    <p class="reflexion-hint">Recuerda: todos los dones se consagran, se desarrollan y se ponen al servicio del cuerpo de Cristo.</p>
+  </div>
+
+  <div class="nav-bottom">
+    <button class="btn-secondary" onclick="reiniciar()">↩ Hacer de nuevo</button>
+    <button class="btn-primary" onclick="window.print()">🖨 Imprimir mis resultados</button>
+  </div>
+</div>
+
+<footer>LIFEHOUSE PLD · NIVEL III — LIDERAZGO Y SERVICIO</footer>
+
+<script>
+const DONES_META = {
+  servicio:    { icon:'🙌', nombre:'Don de Servicio',       tipo:'Don espiritual', desc:'Tienes una inclinación genuina y generosa a ayudar a otros en sus necesidades prácticas, especialmente en tareas que otros no ven.', reflexion:'¿Recuerdas la última vez que ayudaste a alguien en una tarea práctica sin que nadie te lo pidiera? ¿Cómo te sentiste? ¿Fue fácil o difícil hacerlo sin esperar reconocimiento?' },
+  ensenanza:   { icon:'📖', nombre:'Don de Enseñanza',      tipo:'Don espiritual', desc:'Tienes la capacidad de estudiar, comprender y explicar la Palabra de Dios de forma clara y profunda para que otros crezcan.', reflexion:'¿Cuándo fue la última vez que explicaste algo de la Biblia a alguien y viste que lo entendió? ¿Cómo lo hiciste? ¿Qué dice eso sobre cómo Dios te ha equipado?' },
+  exhortacion: { icon:'💬', nombre:'Don de Exhortación',    tipo:'Don espiritual', desc:'Tienes una capacidad natural para animar, consolar y fortalecer a otros en momentos de dificultad o duda.', reflexion:'¿Alguien te ha buscado recientemente cuando estaba pasando por algo difícil? ¿Qué le dijiste? ¿Cómo respondió? ¿Qué te dice eso sobre el don que Dios puso en ti?' },
+  generosidad: { icon:'🤲', nombre:'Don de Generosidad',    tipo:'Don espiritual', desc:'Tienes un corazón que da con alegría y libertad, sin calcular el retorno, cuando ves una necesidad real.', reflexion:'¿Cuándo fue la última vez que diste algo (tiempo, dinero, recursos) sin pensarlo mucho? ¿Qué te impulsó? ¿Cómo te sentiste después? ¿Lo hiciste buscando algo a cambio?' },
+  liderazgo:   { icon:'🧭', nombre:'Don de Liderazgo',      tipo:'Don espiritual', desc:'Tienes la capacidad de organizar, guiar y motivar a grupos de personas hacia un objetivo común con claridad y decisión.', reflexion:'¿Has liderado algo recientemente, aunque sea pequeño? ¿Cómo organizaste al grupo? ¿Las personas respondieron bien? ¿Tomaste decisiones difíciles? ¿Cómo te sentiste en ese rol?' },
+  misericordia:{ icon:'❤️', nombre:'Don de Misericordia',   tipo:'Don espiritual', desc:'Tienes una sensibilidad profunda ante el sufrimiento ajeno y un impulso genuino de acercarte y dar apoyo.', reflexion:'¿Cuándo fue la última vez que el sufrimiento de alguien te afectó profundamente y te impulsó a hacer algo? ¿Qué hiciste? ¿Fue fácil o te costó? ¿Esa persona lo notó?' },
+  musicaArte:  { icon:'🎵', nombre:'Talento de Música y Arte', tipo:'Talento',     desc:'Tienes una capacidad creativa para expresar la belleza de Dios a través de la música, el canto, instrumentos o el arte visual.', reflexion:'¿Usas actualmente tu música o tu arte para glorificar a Dios? ¿Dentro de la iglesia o fuera? Si no lo estás usando, ¿qué te lo ha impedido? ¿Qué podría cambiar esta semana?' },
+  hospitalidad:{ icon:'🏠', nombre:'Talento de Hospitalidad',  tipo:'Talento',     desc:'Tienes un don natural para crear ambientes acogedores y hacer que las personas se sientan valoradas, bienvenidas y en casa.', reflexion:'¿Cuándo fue la última vez que alguien entró a tu espacio (casa, grupo, evento) y se fue sintiéndose genuinamente bienvenido? ¿Qué hiciste para lograrlo? ¿Fue deliberado o natural?' },
+  administracion:{ icon:'📋', nombre:'Don de Administración', tipo:'Don espiritual', desc:'Tienes habilidad para organizar, planificar y administrar recursos, eventos y personas con eficiencia y sabiduría.', reflexion:'¿Has organizado algo recientemente (evento, tarea, equipo)? ¿Cómo lo hiciste? ¿Otros confiaron en ti para ese rol? ¿Disfrutaste el proceso o te generó estrés? ¿Qué dice eso sobre tu don?' }
+};
+
+const ESCENARIOS = [
+  // ── SERVICIO (3) ──
+  { id:'servicio_1', titulo:'En un evento', texto:'Estás en un evento y notas que hay sillas sin acomodar, cables sueltos y el área de comida está desorganizada. Nadie te ha pedido nada. ¿Qué haces naturalmente?', opciones:['Espero a que alguien me asigne una tarea','Lo noto pero asumo que alguien más lo resolverá','Me pongo a ordenar sin decirle a nadie','Le aviso a quien está a cargo y espero instrucciones'], correcta:2 },
+  { id:'servicio_2', titulo:'Carga pesada', texto:'Ves a alguien del equipo cargando solo cajas pesadas después de una reunión. Todos ya se están yendo. ¿Qué haces?', opciones:['Pienso "pobre, qué pesado" y sigo mi camino','Le digo "avísame si necesitas ayuda" mientras me voy','Dejo mis cosas y voy a ayudarle sin que me lo pida','Busco a alguien más para que le ayude'], correcta:2 },
+  { id:'servicio_3', titulo:'Después del culto', texto:'Termina el servicio y ves el salón con sillas desordenadas, papeles en el piso y vasos usados. La mayoría ya se fue. ¿Qué haces?', opciones:['Salgo rápido, total alguien lo hará','Me quedo y empiezo a recoger aunque nadie me lo pidió','Espero a que el líder pida voluntarios','Lo noto pero ya tengo prisa'], correcta:1 },
+  // ── ENSEÑANZA (3) ──
+  { id:'ensenanza_1', titulo:'Una conversación', texto:'Un amigo te dice que no entiende un pasaje bíblico que lleva semanas intentando comprender. ¿Cuál es tu reacción más natural?', opciones:['Me emociona la oportunidad y empiezo a explicarle con detalle','Le recomiendo un libro o un pastor que pueda ayudarle','Le digo que ore y que el Espíritu Santo le dará entendimiento','Le escucho pero siento que no tengo mucho que aportarle'], correcta:0 },
+  { id:'ensenanza_2', titulo:'Te piden dar un estudio', texto:'El líder te pide que prepares y des el estudio bíblico del próximo miércoles. Tienes una semana. ¿Cuál es tu reacción?', opciones:['Digo que sí pero por compromiso, no es lo mío','Me asusto, no sé si podré','Me emociono y ya estoy pensando en cómo prepararlo','Sugiero a otra persona que sé que lo hará mejor'], correcta:2 },
+  { id:'ensenanza_3', titulo:'Pregunta difícil', texto:'Un joven de la iglesia te hace una pregunta doctrinal compleja que requiere estudiar para responder bien. ¿Qué haces?', opciones:['Le digo que eso es muy profundo y mejor pregunte al pastor','Le doy una respuesta rápida sin profundizar','Le digo "no lo sé bien, pero déjame estudiarlo y te explico"','Cambio de tema, no me siento cómodo con esas preguntas'], correcta:2 },
+  // ── EXHORTACIÓN (3) ──
+  { id:'exhortacion_1', titulo:'Un momento difícil', texto:'Un compañero llega visiblemente desanimado y en silencio a una reunión. Nadie más parece notarlo. ¿Qué haces?', opciones:['Le comento al líder para que él lo atienda','Espero a que él hable si quiere','Le envío un mensaje después de la reunión','Me acerco, le pregunto cómo está y me quedo con él'], correcta:3 },
+  { id:'exhortacion_2', titulo:'A punto de rendirse', texto:'Un amigo te confiesa que está a punto de renunciar a su ministerio porque se siente frustrado y agotado. ¿Qué haces?', opciones:['Le digo que si no es para él, está bien dejarlo','Le sugiero que hable con el pastor principal','Le recuerdo por qué empezó, lo animo y me comprometo a apoyarlo','Lo escucho pero no sé qué decirle'], correcta:2 },
+  { id:'exhortacion_3', titulo:'Mala noticia', texto:'Alguien cercano acaba de recibir una noticia devastadora. Está en shock. Estás presente. ¿Qué haces?', opciones:['Le digo "todo va a estar bien" y cambio de tema','No sé qué decir, así que mejor me voy para darle espacio','Me quedo en silencio a su lado, no necesito decir nada','Le doy soluciones prácticas a su problema'], correcta:2 },
+  // ── GENEROSIDAD (3) ──
+  { id:'generosidad_1', titulo:'Una necesidad', texto:'Te enteras de que una familia conocida está pasando por una crisis económica seria. No te han pedido nada. ¿Cuál es tu primera reacción?', opciones:['Les expreso mi apoyo emocional pero no sé qué más hacer','Inmediatamente pienso en qué puedo dar o hacer por ellos','Oro por ellos y confío en que Dios proveerá','Espero a que otros organicen algo para contribuir'], correcta:1 },
+  { id:'generosidad_2', titulo:'Colecta especial', texto:'Anuncian una colecta urgente para una familia que perdió su casa en un incendio. Tú justo estabas ahorrando para algo importante. ¿Qué haces?', opciones:['Doy una cantidad simbólica, no puedo afectar mi ahorro','Reviso cuánto tengo y doy lo que puedo, aunque retrase mi meta','Esta vez no puedo, la próxima será','Pienso que la iglesia debería tener un fondo para esto'], correcta:1 },
+  { id:'generosidad_3', titulo:'Te piden prestado', texto:'Un hermano de la iglesia te pide prestada una herramienta o equipo que tú también necesitas usar esta semana. ¿Qué haces?', opciones:['Le digo que justo la voy a necesitar, lo siento','Se la presto pero le pongo condiciones estrictas de devolución','Se la doy sin problema, yo me arreglo de otra forma','Le sugiero dónde puede comprar o alquilar una'], correcta:2 },
+  // ── LIDERAZGO (3) ──
+  { id:'liderazgo_1', titulo:'Un grupo sin dirección', texto:'Estás en un grupo de trabajo. Hay un objetivo claro pero nadie toma el control y hay confusión. ¿Qué pasa en ti naturalmente?', opciones:['Me desconecto y hago solo mi parte','Apoyo a quien finalmente tome la iniciativa','Me incomoda el desorden pero espero que alguien más actúe','Veo exactamente cómo resolver esto y tomo la palabra'], correcta:3 },
+  { id:'liderazgo_2', titulo:'Proyecto desde cero', texto:'Te piden coordinar un proyecto nuevo del que no hay nada definido: ni equipo, ni plan, ni presupuesto. ¿Cuál es tu reacción?', opciones:['Pido que me den algo más estructurado, no sé por dónde empezar','Me entusiasma la hoja en blanco y ya visualizo el plan completo','Acepto pero necesito que alguien me diga qué hacer paso a paso','Sugiero que alguien con más experiencia lo tome'], correcta:1 },
+  { id:'liderazgo_3', titulo:'Conflicto en el equipo', texto:'Dos personas de tu equipo están en desacuerdo fuerte y el ambiente se está tensando. Los demás no saben qué hacer. ¿Qué haces?', opciones:['No es mi problema, que lo resuelvan entre ellos','Le aviso al líder superior para que intervenga','Los reúno, escucho a ambos y busco un terreno común','Tomo partido por quien creo que tiene la razón'], correcta:2 },
+  // ── MISERICORDIA (3) ──
+  { id:'misericordia_1', titulo:'En la calle', texto:'Caminas por la calle y ves a una persona mayor sentada sola llorando. Vas con prisa. ¿Qué haces?', opciones:['Me detengo sin pensarlo, me siento a su lado y le pregunto qué le pasa','Lo noto pero sigo caminando, confío en que alguien la ayudará','Le ofrezco algo práctico como dinero o comida y continúo','Llamo a alguien que pueda atenderla mejor que yo'], correcta:0 },
+  { id:'misericordia_2', titulo:'En el hospital', texto:'Visitas a alguien en el hospital y ves a un paciente solo en la cama de al lado. Parece triste. Tu visita ya terminó. ¿Qué haces?', opciones:['Me voy, no lo conozco y no es mi asunto','Le sonrío de lejos y sigo mi camino','Me acerco, me presento y me quedo un rato conversando con él','Le digo a la enfermera que ese paciente necesita compañía'], correcta:2 },
+  { id:'misericordia_3', titulo:'Duelo', texto:'Un conocido acaba de perder a un ser querido. No eran muy cercanos, pero te enteraste. ¿Qué haces?', opciones:['No digo nada, apenas nos conocemos','Le envío un mensaje de condolencias por WhatsApp','Voy personalmente a darle el pésame y ofrecerle lo que necesite','Espero a verlo en la iglesia para decirle algo'], correcta:2 },
+  // ── MÚSICA Y ARTE (3) ──
+  { id:'musicaArte_1', titulo:'Un domingo inesperado', texto:'La iglesia necesita urgentemente a alguien que dirija la adoración este domingo. No hay nadie disponible y te lo piden a ti. ¿Cuál es tu reacción interna?', opciones:['Siento pánico, no es mi área','Lo haría si no hay nadie más, pero no es algo que me llame','Es exactamente lo que esperaba que me pidieran','Siento nervios pero no me veo haciéndolo'], correcta:2 },
+  { id:'musicaArte_2', titulo:'Decoración del templo', texto:'Se acerca un evento especial y buscan voluntarios para decorar el templo y crear el ambiente visual. ¿Qué piensas?', opciones:['No es lo mío, prefiero ayudar en otra cosa','Me emociono y ya estoy pensando en ideas, colores y conceptos','Ayudo si me dicen exactamente qué hacer','Admiro a los que tienen ese talento, pero yo no'], correcta:1 },
+  { id:'musicaArte_3', titulo:'Equipo de alabanza', texto:'Te invitan a unirte al equipo de alabanza. Hay un proceso de prueba y compromiso semanal. ¿Qué respondes?', opciones:['Agradezco pero no creo tener el nivel necesario','Lo pienso, suena interesante pero el compromiso me asusta','Es justo lo que he estado esperando, acepto inmediatamente','Prefiero servir en algo más administrativo'], correcta:2 },
+  // ── HOSPITALIDAD (3) ──
+  { id:'hospitalidad_1', titulo:'Visitas inesperadas', texto:'Llegan visitas inesperadas a tu casa en un momento en que no estás preparado. ¿Cuál es tu reacción más honesta?', opciones:['Los recibo pero internamente deseo que se vayan pronto','Me estreso porque no tengo nada listo para recibirlos bien','Los atiendo por cortesía pero me cuesta genuinamente disfrutarlo','Los recibo con gusto, improviso y hago que se sientan cómodos naturalmente'], correcta:3 },
+  { id:'hospitalidad_2', titulo:'Persona nueva', texto:'Llega alguien nuevo a la iglesia. Está solo en una esquina, visiblemente incómodo. Tú ya estás con tu grupo de amigos. ¿Qué haces?', opciones:['Me acerco, me presento y lo integro a mi grupo','Espero a que el equipo de bienvenida lo atienda','Lo saludo de lejos con una sonrisa','No lo noto, estoy concentrado en mi grupo'], correcta:0 },
+  { id:'hospitalidad_3', titulo:'Almuerzo de grupo', texto:'Te toca organizar el almuerzo para un grupo de 20 personas después del servicio. Tienes presupuesto limitado. ¿Cómo reaccionas?', opciones:['Pido que cada quien traiga algo y así me desentiendo','Lo veo como una carga, acepto pero de mala gana','Me entusiasma planear el menú, decorar y crear un ambiente acogedor','Sugiero pedir comida a domicilio y ya'], correcta:2 },
+  // ── ADMINISTRACIÓN (3) ──
+  { id:'administracion_1', titulo:'Un equipo en caos', texto:'En un ministerio o grupo al que perteneces hay caos: nadie sabe quién hace qué, los eventos no están coordinados y los recursos están desorganizados. ¿Qué pasa en ti?', opciones:['Inmediatamente veo el problema completo y cómo estructurarlo','Me adapto al caos y funciono igual dentro de él','Me frustra pero no sé por dónde empezar','Espero a que el líder lo resuelva'], correcta:0 },
+  { id:'administracion_2', titulo:'Presupuesto anual', texto:'Te piden preparar el presupuesto del ministerio para el próximo año. Hay que proyectar gastos, ingresos y prioridades. ¿Cómo te sientes?', opciones:['Me abruma, los números no son lo mío','Me siento cómodo analizando cifras, categorizando y proyectando','Lo hago pero necesito mucha ayuda','Sugiero contratar a alguien externo'], correcta:1 },
+  { id:'administracion_3', titulo:'Evento desorganizado', texto:'Un evento importante es en dos semanas y nada está listo: no hay cronograma, no hay responsables claros, no hay lista de recursos. ¿Qué haces?', opciones:['Me preocupo pero no es mi responsabilidad','Espero instrucciones de quien esté a cargo','Agarro papel y lápiz y empiezo a hacer listas, cronograma y asignaciones','Confío en que todo saldrá bien de alguna forma'], correcta:2 }
+];
+
+let respuestas = {};
+let totalPreguntas = ESCENARIOS.length;
+
+function goToHero() {
+  document.getElementById('sec-hero').style.display = 'flex';
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('progressWrap').classList.remove('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateStepPills(activeStep) {
+  document.querySelectorAll('#stepsNav .step-pill').forEach(pill => {
+    const s = parseInt(pill.getAttribute('data-step'));
+    pill.classList.toggle('active', s === activeStep);
+  });
+}
+
+function goToStep(step) {
+  document.getElementById('sec-hero').style.display = 'none';
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + step).classList.add('active');
+  updateStepPills(step);
+
+  if (step === 2) {
+    document.getElementById('progressWrap').classList.add('visible');
+    renderDones();
+  } else {
+    document.getElementById('progressWrap').classList.remove('visible');
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderDones() {
+  const container = document.getElementById('dones-container');
+  if (container.innerHTML !== '') return;
+
+  ESCENARIOS.forEach((esc, ei) => {
+    const card = document.createElement('div');
+    card.className = 'don-card';
+    card.id = 'esc-' + esc.id;
+
+    const letras = ['A', 'B', 'C', 'D'];
+    const opcionesHTML = esc.opciones.map((op, oi) => {
+      const sel = respuestas[esc.id] === oi ? 'selected' : '';
+      return `
+        <button class="opcion-btn ${sel}" onclick="setRespuesta('${esc.id}', ${oi}, this)" aria-label="Opción ${letras[oi]}: ${op.replace(/"/g, '&quot;')}">
+          <span class="opcion-letra">${letras[oi]}</span>
+          <span>${op}</span>
+        </button>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="escenario-titulo">${esc.titulo}</div>
+      <p class="escenario-texto">${esc.texto}</p>
+      <div class="opciones-list">${opcionesHTML}</div>`;
+    container.appendChild(card);
+  });
+}
+
+function setRespuesta(escId, optIndex, btn) {
+  respuestas[escId] = optIndex;
+  const card = btn.closest('.don-card');
+  card.querySelectorAll('.opcion-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  updateProgress();
+}
+
+function updateProgress() {
+  const respondidas = Object.keys(respuestas).length;
+  const pct = Math.round((respondidas / totalPreguntas) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+
+  const btnRes = document.getElementById('btn-resultados');
+  const msgPend = document.getElementById('msg-pendientes');
+
+  if (respondidas === totalPreguntas) {
+    btnRes.style.display = 'inline-flex';
+    msgPend.textContent = '';
+  } else {
+    btnRes.style.display = 'none';
+    msgPend.textContent = `Faltan ${totalPreguntas - respondidas} respuestas para ver tus resultados.`;
+  }
+}
+
+function dibujarRadar(scores) {
+  const canvas = document.getElementById('radarCanvas');
+  const size = Math.min(520, canvas.parentElement.clientWidth - 32);
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const cx = size / 2, cy = size / 2;
+  const radius = size * 0.36;
+  const niveles = 3;
+  const dones = Object.keys(DONES_META);
+  const total = dones.length;
+  const maxScore = 15;
+
+  ctx.clearRect(0, 0, size, size);
+
+  // Grid circles
+  for (let n = 1; n <= niveles; n++) {
+    const r = (radius / niveles) * n;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = '#2C1F0E';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    // Level label
+    ctx.fillStyle = '#3A2A14';
+    ctx.font = '9px "Space Grotesk", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(Math.round((maxScore / niveles) * n), cx + 4, cy - r + 4);
+  }
+
+  // Axis lines
+  for (let i = 0; i < total; i++) {
+    const angle = (Math.PI * 2 / total) * i - Math.PI / 2;
+    const x = cx + radius * Math.cos(angle);
+    const y = cy + radius * Math.sin(angle);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = '#2C1F0E';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // Data polygon
+  ctx.beginPath();
+  for (let i = 0; i < total; i++) {
+    const donKey = dones[i];
+    const score = scores[donKey] || 0;
+    const angle = (Math.PI * 2 / total) * i - Math.PI / 2;
+    const val = (score / maxScore) * radius;
+    const x = cx + val * Math.cos(angle);
+    const y = cy + val * Math.sin(angle);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(201,146,42,0.15)';
+  ctx.fill();
+  ctx.strokeStyle = 'var(--gold)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Data points
+  for (let i = 0; i < total; i++) {
+    const donKey = dones[i];
+    const score = scores[donKey] || 0;
+    const angle = (Math.PI * 2 / total) * i - Math.PI / 2;
+    const val = (score / maxScore) * radius;
+    const x = cx + val * Math.cos(angle);
+    const y = cy + val * Math.sin(angle);
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#F0C060';
+    ctx.fill();
+    ctx.strokeStyle = '#1A1208';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  // Labels
+  const labelDist = radius + 38;
+  ctx.fillStyle = '#C4B49A';
+  ctx.font = '11px "Space Grotesk", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (let i = 0; i < total; i++) {
+    const donKey = dones[i];
+    const meta = DONES_META[donKey];
+    const angle = (Math.PI * 2 / total) * i - Math.PI / 2;
+    const lx = cx + labelDist * Math.cos(angle);
+    const ly = cy + labelDist * Math.sin(angle);
+    // Short name for label
+    const nombre = meta.nombre.replace('Don de ','').replace('Talento de ','');
+    ctx.fillText(nombre, lx, ly);
+  }
+}
+
+function calcularResultados() {
+  // Agrupar por don y sumar aciertos
+  const scoresPorDon = {};
+  const dones = Object.keys(DONES_META);
+  dones.forEach(d => { scoresPorDon[d] = 0; });
+
+  ESCENARIOS.forEach(esc => {
+    const donKey = esc.id.replace(/_\d+$/, '');
+    if (respuestas[esc.id] === esc.correcta) {
+      scoresPorDon[donKey] += 5;
+    }
+  });
+
+  // Construir array ordenado
+  const scores = dones.map(donKey => ({
+    id: donKey,
+    ...DONES_META[donKey],
+    score: scoresPorDon[donKey],
+    max: 15
+  }));
+  scores.sort((a, b) => b.score - a.score);
+
+  // Radar
+  dibujarRadar(scoresPorDon);
+
+  // Top don
+  const top = scores[0];
+  document.getElementById('top-don-name').textContent = top.nombre;
+  document.getElementById('top-don-desc').textContent = top.desc;
+
+  // Lista completa
+  const list = document.getElementById('result-list');
+  list.innerHTML = '';
+  scores.forEach((item, i) => {
+    const pct = Math.round((item.score / item.max) * 100);
+    const isTop = i === 0;
+    const row = document.createElement('div');
+    row.className = 'result-card' + (isTop ? ' is-top' : '');
+    row.innerHTML = `
+      <div class="result-row">
+        <span class="result-rank${isTop ? ' is-top' : ''}">${i+1}</span>
+        <span class="result-icon">${item.icon}</span>
+        <div class="result-info">
+          <div class="result-name${isTop ? ' is-top' : ''}">${item.nombre}</div>
+          <div class="result-type">${item.tipo}</div>
+        </div>
+        <span class="result-score">${item.score}/15</span>
+      </div>
+      <div class="result-bar">
+        <div class="result-bar-fill" style="width:${pct}%"></div>
+      </div>`;
+    list.appendChild(row);
+  });
+
+  // Reflexión personalizada
+  document.getElementById('reflexion-1').textContent = top.reflexion;
+
+  goToStep(3);
+}
+
+function reiniciar() {
+  respuestas = {};
+  document.getElementById('dones-container').innerHTML = '';
+  document.getElementById('btn-resultados').style.display = 'none';
+  document.getElementById('msg-pendientes').textContent = '';
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('progressPct').textContent = '0%';
+  goToHero();
+  document.getElementById('sec-hero').style.display = 'flex';
+}
+</script>
+</body>
+</html>
