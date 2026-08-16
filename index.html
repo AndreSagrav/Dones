@@ -1229,7 +1229,8 @@ function autoCompletar() {
 
 function dibujarRadar(scores) {
   const canvas = document.getElementById('radarCanvas');
-  const size = Math.min(520, canvas.parentElement.clientWidth - 48);
+  const parentW = canvas.parentElement.clientWidth || canvas.parentElement.offsetWidth || 520;
+  let size = Math.max(200, Math.min(520, parentW - 48));
   const dpr = window.devicePixelRatio || 1;
   canvas.width = size * dpr;
   canvas.height = size * dpr;
@@ -1240,7 +1241,7 @@ function dibujarRadar(scores) {
 
   const cx = size / 2;
   const cy = size / 2;
-  const radius = size * 0.34;
+  const radius = Math.max(40, size * 0.34);
   const dones = Object.keys(DONES_META);
   const total = dones.length;
   const maxScore = 15;
