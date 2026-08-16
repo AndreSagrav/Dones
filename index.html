@@ -235,6 +235,60 @@
     margin: 0 auto;
   }
 
+  /* ── FORMULARIO ── */
+  .form-wrap {
+    max-width: 480px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    border: 1px solid #3A2A14;
+    border-radius: var(--radius);
+    padding: 40px 32px;
+  }
+
+  .form-field {
+    margin-bottom: 20px;
+  }
+
+  .form-field label {
+    display: block;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gold);
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .form-field input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1.5px solid #3A2A14;
+    background: var(--warm);
+    color: var(--cream);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    transition: var(--transition);
+  }
+
+  .form-field input:focus {
+    outline: none;
+    border-color: var(--gold);
+    background: #3D2208;
+  }
+
+  .form-field input::placeholder {
+    color: #5A4A32;
+  }
+
+  .form-error {
+    color: var(--amber);
+    font-size: 13px;
+    font-family: 'Space Grotesk', sans-serif;
+    margin-bottom: 12px;
+    min-height: 18px;
+  }
+
   /* ── INSTRUCCIONES ── */
   .instructions-grid {
     display: grid;
@@ -733,9 +787,41 @@
     <div class="step-pill" data-step="3" onclick="goToStep(3)">③ Resultados</div>
   </div>
 
-  <button class="btn-primary" onclick="goToStep(1)">
+  <button class="btn-primary" onclick="goToForm()">
     Comenzar evaluación <span>→</span>
   </button>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SECCIÓN 0.5: FORMULARIO DATOS
+════════════════════════════════════════════ -->
+<div id="sec-form" class="section">
+  <div class="section-header">
+    <div class="section-badge">Antes de empezar</div>
+    <h2>Tus <em>datos</em></h2>
+    <p class="section-desc">Necesitamos algunos datos básicos para personalizar tus resultados.</p>
+  </div>
+
+  <div class="form-wrap">
+    <div class="form-field">
+      <label for="f-nombre">Nombre completo *</label>
+      <input type="text" id="f-nombre" placeholder="Ej: María González" autocomplete="name">
+    </div>
+    <div class="form-field">
+      <label for="f-email">Correo electrónico *</label>
+      <input type="email" id="f-email" placeholder="Ej: maria@gmail.com" autocomplete="email">
+    </div>
+    <div class="form-field">
+      <label for="f-iglesia">Iglesia / Célula / Ministerio</label>
+      <input type="text" id="f-iglesia" placeholder="Ej: Lifehouse PLD - Célula Norte">
+    </div>
+    <div class="form-field">
+      <label for="f-edad">Edad</label>
+      <input type="text" id="f-edad" placeholder="Ej: 28" inputmode="numeric">
+    </div>
+    <p id="form-error" class="form-error"></p>
+    <button class="btn-primary" onclick="validarFormulario()" style="margin-top: 8px;">Continuar →</button>
+  </div>
 </div>
 
 <!-- ════════════════════════════════════════════
@@ -812,7 +898,7 @@
   <div class="section-header">
     <div class="section-badge">Paso 3 de 3</div>
     <h2>Tus <em>resultados</em></h2>
-    <p class="section-desc">Aquí están tus dones y talentos ordenados de mayor a menor puntaje. Reflexiona con honestidad sobre lo que ves.</p>
+    <p class="section-desc" id="resultados-saludo">Aquí están tus dones y talentos ordenados de mayor a menor puntaje. Reflexiona con honestidad sobre lo que ves.</p>
   </div>
 
   <div class="top-don-card" id="top-don-card">
@@ -852,7 +938,8 @@
 
   <div class="nav-bottom">
     <button class="btn-secondary" onclick="reiniciar()">↩ Hacer de nuevo</button>
-    <button class="btn-primary" onclick="window.print()">🖨 Imprimir mis resultados</button>
+    <button class="btn-primary" onclick="descargarPNG()">📷 Descargar radar (PNG)</button>
+    <button class="btn-primary" onclick="window.print()">� Descargar / Imprimir (PDF)</button>
   </div>
 </div>
 
@@ -912,6 +999,66 @@ const ESCENARIOS = [
 
 let respuestas = {};
 let totalPreguntas = ESCENARIOS.length;
+let datosUsuario = {};
+
+const SUPABASE_URL = 'https://hexrnglihkebatlshzmg.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhleHJuZ2xpaGtlYmF0bHNoem1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDQ1NDMsImV4cCI6MjEwMjQ4MDU0M30.eyfDkc6pVhlkGeI88idWLiXX-hSwI5IST8rzZegbFro';
+
+function goToForm() {
+  document.getElementById('sec-hero').style.display = 'none';
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-form').classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function validarFormulario() {
+  const nombre = document.getElementById('f-nombre').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const iglesia = document.getElementById('f-iglesia').value.trim();
+  const edad = document.getElementById('f-edad').value.trim();
+  const err = document.getElementById('form-error');
+
+  if (!nombre) { err.textContent = 'Por favor ingresa tu nombre.'; return; }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { err.textContent = 'Por favor ingresa un correo válido.'; return; }
+
+  err.textContent = '';
+  datosUsuario = { nombre, email, iglesia, edad };
+  goToStep(1);
+}
+
+async function guardarEnSupabase(scoresPorDon) {
+  try {
+    const payload = {
+      nombre: datosUsuario.nombre,
+      email: datosUsuario.email,
+      iglesia: datosUsuario.iglesia || null,
+      edad: datosUsuario.edad || null,
+      respuestas: respuestas,
+      scores: scoresPorDon
+    };
+    await fetch(`${SUPABASE_URL}/rest/v1/resultados`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(payload)
+    });
+  } catch (e) {
+    console.error('Error guardando en Supabase:', e);
+  }
+}
+
+function descargarPNG() {
+  const canvas = document.getElementById('radarCanvas');
+  const link = document.createElement('a');
+  const nombreArchivo = (datosUsuario.nombre || 'resultados').replace(/\s+/g, '_').toLowerCase();
+  link.download = `dones_${nombreArchivo}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
 
 function goToHero() {
   document.getElementById('sec-hero').style.display = 'flex';
@@ -1146,19 +1293,32 @@ function calcularResultados() {
     list.appendChild(row);
   });
 
+  // Saludo personalizado
+  const saludo = document.getElementById('resultados-saludo');
+  saludo.textContent = `${datosUsuario.nombre}, aquí están tus dones y talentos ordenados de mayor a menor puntaje. Reflexiona con honestidad sobre lo que ves.`;
+
   // Reflexión personalizada
   document.getElementById('reflexion-1').textContent = top.reflexion;
+
+  // Guardar en Supabase
+  guardarEnSupabase(scoresPorDon);
 
   goToStep(3);
 }
 
 function reiniciar() {
   respuestas = {};
+  datosUsuario = {};
   document.getElementById('dones-container').innerHTML = '';
   document.getElementById('btn-resultados').style.display = 'none';
   document.getElementById('msg-pendientes').textContent = '';
   document.getElementById('progressFill').style.width = '0%';
   document.getElementById('progressPct').textContent = '0%';
+  document.getElementById('f-nombre').value = '';
+  document.getElementById('f-email').value = '';
+  document.getElementById('f-iglesia').value = '';
+  document.getElementById('f-edad').value = '';
+  document.getElementById('form-error').textContent = '';
   goToHero();
   document.getElementById('sec-hero').style.display = 'flex';
 }

@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Admin — Dones Lifehouse PLD</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔒</text></svg>">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #C9922A;
+    --gold-lt: #F0C060;
+    --amber: #E8701A;
+    --deep: #1A1208;
+    --warm: #2C1F0E;
+    --cream: #FBF5EA;
+    --muted: #7A6A52;
+    --white: #FFFFFF;
+    --card-bg: #231809;
+    --radius: 16px;
+    --transition: 0.35s cubic-bezier(.4,0,.2,1);
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--deep);
+    color: var(--cream);
+    min-height: 100vh;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--gold-lt);
+    outline-offset: 3px;
+  }
+
+  /* ── LOGIN ── */
+  .login-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .login-card {
+    background: var(--card-bg);
+    border: 1px solid #3A2A14;
+    border-radius: var(--radius);
+    padding: 48px 40px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .login-card h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .login-card p {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+
+  .login-card input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1.5px solid #3A2A14;
+    background: var(--warm);
+    color: var(--cream);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    margin-bottom: 16px;
+  }
+
+  .login-card input:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+
+  .login-error {
+    color: var(--amber);
+    font-size: 13px;
+    font-family: 'Space Grotesk', sans-serif;
+    margin-bottom: 12px;
+    min-height: 18px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: linear-gradient(135deg, var(--gold), var(--amber));
+    color: var(--deep);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px 32px;
+    border-radius: 100px;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+  }
+
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px #C9922A44; }
+
+  .btn-sm {
+    padding: 8px 16px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1.5px solid #3A2A14;
+    color: var(--cream);
+  }
+
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold-lt); }
+
+  /* ── DASHBOARD ── */
+  .dashboard { display: none; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  .dashboard.visible { display: block; }
+
+  .dash-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #2C1F0E;
+  }
+
+  .dash-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    color: var(--white);
+  }
+
+  .dash-header h1 span { color: var(--gold-lt); }
+
+  .dash-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--card-bg);
+    border: 1px solid #3A2A14;
+    border-radius: 12px;
+    padding: 20px 24px;
+  }
+
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--gold-lt);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 8px;
+  }
+
+  /* ── TABLA ── */
+  .table-wrap {
+    background: var(--card-bg);
+    border: 1px solid #3A2A14;
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    padding: 14px 20px;
+    text-align: left;
+    border-bottom: 1px solid #2C1F0E;
+  }
+
+  th {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    background: var(--warm);
+  }
+
+  td {
+    font-size: 14px;
+    color: var(--cream);
+  }
+
+  tr:hover td { background: #2C1F0E; }
+
+  .score-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--warm);
+    color: var(--gold-lt);
+    border: 1px solid #3A2A14;
+  }
+
+  .score-badge.top {
+    background: linear-gradient(135deg, var(--gold), var(--amber));
+    color: var(--deep);
+    border-color: transparent;
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 200;
+    padding: 24px;
+    overflow-y: auto;
+  }
+
+  .modal-overlay.visible { display: flex; align-items: flex-start; justify-content: center; }
+
+  .modal-card {
+    background: var(--card-bg);
+    border: 1px solid var(--gold);
+    border-radius: var(--radius);
+    padding: 32px;
+    max-width: 600px;
+    width: 100%;
+    margin: 40px 0;
+  }
+
+  .modal-card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  .modal-card .modal-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  .modal-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .modal-info-item {
+    background: var(--warm);
+    border-radius: 10px;
+    padding: 12px 16px;
+  }
+
+  .modal-info-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10px;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 4px;
+  }
+
+  .modal-info-value {
+    font-size: 14px;
+    color: var(--cream);
+  }
+
+  .modal-radar-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+    background: var(--warm);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .modal-scores {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .modal-score-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .modal-score-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    color: var(--cream);
+    min-width: 160px;
+  }
+
+  .modal-score-bar {
+    flex: 1;
+    height: 8px;
+    background: #2C1F0E;
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .modal-score-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--amber));
+    border-radius: 100px;
+  }
+
+  .modal-score-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gold-lt);
+    min-width: 40px;
+    text-align: right;
+  }
+
+  .modal-close {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .dash-header { flex-direction: column; align-items: flex-start; }
+    .table-wrap { overflow-x: auto; }
+    table { min-width: 600px; }
+    .modal-info { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <h1>Panel Admin</h1>
+    <p>Dones — Lifehouse PLD</p>
+    <input type="password" id="adminPass" placeholder="Contraseña" onkeydown="if(event.key==='Enter') login()">
+    <p class="login-error" id="loginError"></p>
+    <button class="btn" onclick="login()">Ingresar →</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
+  <div class="dash-header">
+    <h1>Panel <span>Admin</span> — Resultados</h1>
+    <button class="btn btn-outline btn-sm" onclick="logout()">Cerrar sesión</button>
+  </div>
+
+  <div class="dash-stats">
+    <div class="stat-card">
+      <div class="stat-num" id="stat-total">0</div>
+      <div class="stat-label">Total respuestas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-hoy">0</div>
+      <div class="stat-label">Hoy</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-semana">0</div>
+      <div class="stat-label">Esta semana</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Iglesia</th>
+          <th>Edad</th>
+          <th>Don dominante</th>
+          <th>Fecha</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="results-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-card">
+    <h2 id="modal-name">—</h2>
+    <p class="modal-sub" id="modal-date">—</p>
+
+    <div class="modal-info">
+      <div class="modal-info-item">
+        <div class="modal-info-label">Email</div>
+        <div class="modal-info-value" id="modal-email">—</div>
+      </div>
+      <div class="modal-info-item">
+        <div class="modal-info-label">Iglesia</div>
+        <div class="modal-info-value" id="modal-iglesia">—</div>
+      </div>
+      <div class="modal-info-item">
+        <div class="modal-info-label">Edad</div>
+        <div class="modal-info-value" id="modal-edad">—</div>
+      </div>
+      <div class="modal-info-item">
+        <div class="modal-info-label">Don dominante</div>
+        <div class="modal-info-value" id="modal-top">—</div>
+      </div>
+    </div>
+
+    <div class="modal-radar-wrap">
+      <canvas id="modalRadar" width="400" height="400"></canvas>
+    </div>
+
+    <div class="modal-scores" id="modal-scores"></div>
+
+    <div class="modal-close">
+      <button class="btn btn-outline btn-sm" onclick="cerrarModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://hexrnglihkebatlshzmg.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhleHJuZ2xpaGtlYmF0bHNoem1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDQ1NDMsImV4cCI6MjEwMjQ4MDU0M30.eyfDkc6pVhlkGeI88idWLiXX-hSwI5IST8rzZegbFro';
+const ADMIN_PASS = 'Lifehouse2026';
+
+const DONES_META = {
+  servicio:      { icon:'🙌', nombre:'Don de Servicio' },
+  ensenanza:     { icon:'📖', nombre:'Don de Enseñanza' },
+  exhortacion:   { icon:'💬', nombre:'Don de Exhortación' },
+  generosidad:   { icon:'🤲', nombre:'Don de Generosidad' },
+  liderazgo:     { icon:'🧭', nombre:'Don de Liderazgo' },
+  misericordia:  { icon:'❤️', nombre:'Don de Misericordia' },
+  musicaArte:    { icon:'🎵', nombre:'Talento de Música y Arte' },
+  hospitalidad:  { icon:'🏠', nombre:'Talento de Hospitalidad' },
+  administracion:{ icon:'📋', nombre:'Don de Administración' }
+};
+
+let resultadosData = [];
+
+function login() {
+  const pass = document.getElementById('adminPass').value;
+  const err = document.getElementById('loginError');
+  if (pass === ADMIN_PASS) {
+    err.textContent = '';
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('dashboard').classList.add('visible');
+    cargarResultados();
+  } else {
+    err.textContent = 'Contraseña incorrecta.';
+  }
+}
+
+function logout() {
+  document.getElementById('adminPass').value = '';
+  document.getElementById('dashboard').classList.remove('visible');
+  document.getElementById('loginWrap').style.display = 'flex';
+}
+
+async function cargarResultados() {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/resultados?order=fecha.desc`, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+      }
+    });
+    resultadosData = await res.json();
+    renderTabla();
+    renderStats();
+  } catch (e) {
+    console.error('Error cargando resultados:', e);
+  }
+}
+
+function renderStats() {
+  const total = resultadosData.length;
+  const hoy = new Date();
+  hoy.setHours(0,0,0,0);
+  const semana = new Date();
+  semana.setDate(semana.getDate() - 7);
+
+  const countHoy = resultadosData.filter(r => new Date(r.fecha) >= hoy).length;
+  const countSemana = resultadosData.filter(r => new Date(r.fecha) >= semana).length;
+
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-hoy').textContent = countHoy;
+  document.getElementById('stat-semana').textContent = countSemana;
+}
+
+function getTopDon(scores) {
+  if (!scores) return '—';
+  const entries = Object.entries(scores).sort((a,b) => b[1] - a[1]);
+  if (entries.length === 0) return '—';
+  const [key, val] = entries[0];
+  return DONES_META[key] ? DONES_META[key].nombre : '—';
+}
+
+function renderTabla() {
+  const tbody = document.getElementById('results-tbody');
+  tbody.innerHTML = '';
+
+  if (resultadosData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:40px;">Aún no hay respuestas.</td></tr>';
+    return;
+  }
+
+  resultadosData.forEach((r, i) => {
+    const fecha = new Date(r.fecha).toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    const topDon = getTopDon(r.scores);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${r.nombre}</strong></td>
+      <td>${r.email}</td>
+      <td>${r.iglesia || '—'}</td>
+      <td>${r.edad || '—'}</td>
+      <td><span class="score-badge top">${topDon}</span></td>
+      <td style="font-size:12px;color:var(--muted);">${fecha}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="verDetalle(${i})">Ver</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function verDetalle(index) {
+  const r = resultadosData[index];
+  document.getElementById('modal-name').textContent = r.nombre;
+  document.getElementById('modal-date').textContent = new Date(r.fecha).toLocaleString('es-ES');
+  document.getElementById('modal-email').textContent = r.email;
+  document.getElementById('modal-iglesia').textContent = r.iglesia || '—';
+  document.getElementById('modal-edad').textContent = r.edad || '—';
+  document.getElementById('modal-top').textContent = getTopDon(r.scores);
+
+  // Scores
+  const scoresContainer = document.getElementById('modal-scores');
+  scoresContainer.innerHTML = '';
+  if (r.scores) {
+    const sorted = Object.entries(r.scores).sort((a,b) => b[1] - a[1]);
+    sorted.forEach(([key, val]) => {
+      const meta = DONES_META[key];
+      if (!meta) return;
+      const pct = Math.round((val / 15) * 100);
+      const row = document.createElement('div');
+      row.className = 'modal-score-row';
+      row.innerHTML = `
+        <span class="modal-score-name">${meta.icon} ${meta.nombre}</span>
+        <div class="modal-score-bar"><div class="modal-score-fill" style="width:${pct}%"></div></div>
+        <span class="modal-score-num">${val}/15</span>
+      `;
+      scoresContainer.appendChild(row);
+    });
+  }
+
+  // Radar
+  dibujarRadarModal(r.scores || {});
+
+  document.getElementById('modalOverlay').classList.add('visible');
+}
+
+function cerrarModal() {
+  document.getElementById('modalOverlay').classList.remove('visible');
+}
+
+function dibujarRadarModal(scores) {
+  const canvas = document.getElementById('modalRadar');
+  const ctx = canvas.getContext('2d');
+  const size = 400;
+  canvas.width = size;
+  canvas.height = size;
+  const cx = size / 2, cy = size / 2;
+  const radius = size * 0.32;
+  const niveles = 3;
+  const dones = Object.keys(DONES_META);
+  const total = dones.length;
+  const maxScore = 15;
+
+  ctx.clearRect(0, 0, size, size);
+
+  for (let n = 1; n <= niveles; n++) {
+    const r = (radius / niveles) * n;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = '#2C1F0E';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  for (let i = 0; i < total; i++) {
+    const angle = (Math.PI * 2 / total) * i - Math.PI / 2;
+    const x = cx + radius * Math.cos(angle);
+    const y = cy + radius * Math.sin(angle);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = '#2C1F0E';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  ctx.beginPath();
+  for (let i = 0; i < total; i++) {
+    const donKey = dones[i];
+    const score = scores[donKey] || 0;
+    const angle = (Math.PI * 2 / total) * i - Math.PI / 2;
+    const val = (score / maxScore) * radius;
+    const x = cx + val * Math.cos(angle);
+    const y = cy + val * Math.sin(angle);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(201,146,42,0.15)';
+  ctx.fill();
+  ctx.strokeStyle = '#C9922A';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  for (let i = 0; i < total; i++) {
+    const donKey = dones[i];
+    const score = scores[donKey] || 0;
+    const angle = (Math.PI * 2 / total) * i - Math.PI / 2;
+    const val = (score / maxScore) * radius;
+    const x = cx + val * Math.cos(angle);
+    const y = cy + val * Math.sin(angle);
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#F0C060';
+    ctx.fill();
+    ctx.strokeStyle = '#1A1208';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  const labelDist = radius + 32;
+  ctx.fillStyle = '#C4B49A';
+  ctx.font = '10px "Space Grotesk", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (let i = 0; i < total; i++) {
+    const donKey = dones[i];
+    const meta = DONES_META[donKey];
+    const angle = (Math.PI * 2 / total) * i - Math.PI / 2;
+    const lx = cx + labelDist * Math.cos(angle);
+    const ly = cy + labelDist * Math.sin(angle);
+    const nombre = meta.nombre.replace('Don de ','').replace('Talento de ','');
+    ctx.fillText(nombre, lx, ly);
+  }
+}
+
+// Cerrar modal al click fuera
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) cerrarModal();
+});
+</script>
+</body>
+</html>
