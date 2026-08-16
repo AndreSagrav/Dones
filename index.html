@@ -890,6 +890,7 @@
     <button class="btn-primary" id="btn-next" onclick="cambiarPregunta(1)" disabled>Siguiente →</button>
     <button class="btn-primary" id="btn-resultados" onclick="calcularResultados()" style="display:none">Ver mis resultados →</button>
     <p id="msg-pendientes" style="font-size:13px; color:var(--amber); font-family:'Space Grotesk',sans-serif; text-align:center; width:100%;"></p>
+    <button onclick="autoCompletar()" style="background:none;border:none;color:#3A2A14;font-size:11px;cursor:pointer;padding:4px;margin-top:8px;">···</button>
   </div>
 </div>
 
@@ -1214,14 +1215,28 @@ function updateProgress() {
   }
 }
 
+function autoCompletar() {
+  ESCENARIOS.forEach(esc => {
+    if (respuestas[esc.id] === undefined) {
+      respuestas[esc.id] = Math.floor(Math.random() * 4);
+    }
+  });
+  // Re-renderizar para marcar las opciones
+  const container = document.getElementById('dones-container');
+  container.innerHTML = '';
+  renderDones();
+  mostrarPregunta(ESCENARIOS.length - 1);
+}
+
 function dibujarRadar(scores) {
   const canvas = document.getElementById('radarCanvas');
-  const size = Math.min(520, canvas.parentElement.clientWidth - 32);
+  let size = Math.min(520, canvas.parentElement.clientWidth - 32);
+  if (!size || size < 200) size = 400;
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext('2d');
   const cx = size / 2, cy = size / 2;
-  const radius = size * 0.36;
+  const radius = Math.max(50, size * 0.36);
   const niveles = 3;
   const dones = Object.keys(DONES_META);
   const total = dones.length;
