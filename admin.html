@@ -919,7 +919,25 @@ async function cargarEscenariosAdmin() {
         'Authorization': `Bearer ${SUPABASE_KEY}`
       }
     });
-    escenariosData = await res.json();
+    const raw = await res.text();
+    console.log('Raw response:', raw.substring(0, 200));
+
+    let data;
+    try { data = JSON.parse(raw); } catch(e) { data = raw; }
+
+    console.log('Parsed type:', typeof data, 'IsArray:', Array.isArray(data));
+
+    // Si no es array, intentar extraer de formatos comunes
+    if (!Array.isArray(data)) {
+      if (data && Array.isArray(data.data)) data = data.data;
+      else if (data && Array.isArray(data.items)) data = data.items;
+      else if (data === null || typeof data === 'string') data = [];
+      else data = [];
+    }
+
+    escenariosData = data;
+    console.log('Escenarios cargados:', escenariosData.length);
+
     // Asegurar que opciones sea array
     escenariosData.forEach(esc => {
       if (typeof esc.opciones === 'string') {
@@ -927,7 +945,7 @@ async function cargarEscenariosAdmin() {
       }
       if (!Array.isArray(esc.opciones)) esc.opciones = [];
     });
-    console.log('Escenarios cargados:', escenariosData.length, escenariosData[0]);
+
     renderEditorEscenarios();
   } catch (e) {
     console.error('Error cargando escenarios:', e);
