@@ -1230,13 +1230,13 @@ function autoCompletar() {
 
 function dibujarRadar(scores) {
   const canvas = document.getElementById('radarCanvas');
-  let size = Math.min(520, canvas.parentElement.clientWidth - 32);
-  if (!size || size < 200) size = 400;
+  let size = Math.min(560, canvas.parentElement.clientWidth - 32);
+  if (!size || size < 200) size = 480;
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext('2d');
   const cx = size / 2, cy = size / 2;
-  const radius = Math.max(50, size * 0.36);
+  const radius = Math.max(80, size * 0.32);
   const niveles = 3;
   const dones = Object.keys(DONES_META);
   const total = dones.length;
@@ -1244,19 +1244,32 @@ function dibujarRadar(scores) {
 
   ctx.clearRect(0, 0, size, size);
 
-  // Grid circles
-  for (let n = 1; n <= niveles; n++) {
+  // Fondo circular suave
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius + 20, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(44,31,14,0.4)';
+  ctx.fill();
+
+  // Grid círculos con relleno gradual
+  for (let n = niveles; n >= 1; n--) {
     const r = (radius / niveles) * n;
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.strokeStyle = '#2C1F0E';
-    ctx.lineWidth = 1;
+    ctx.fillStyle = n === niveles ? 'rgba(35,24,9,0.6)' : 'rgba(44,31,14,0.3)';
+    ctx.fill();
+    ctx.strokeStyle = '#4A3A22';
+    ctx.lineWidth = 1.5;
     ctx.stroke();
-    // Level label
-    ctx.fillStyle = '#3A2A14';
-    ctx.font = '9px "Space Grotesk", sans-serif';
+  }
+
+  // Nivel labels
+  for (let n = 1; n <= niveles; n++) {
+    const r = (radius / niveles) * n;
+    ctx.fillStyle = '#5A4A32';
+    ctx.font = 'bold 10px "Space Grotesk", sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText(Math.round((maxScore / niveles) * n), cx + 4, cy - r + 4);
+    ctx.textBaseline = 'middle';
+    ctx.fillText(Math.round((maxScore / niveles) * n), cx + 6, cy - r);
   }
 
   // Axis lines
@@ -1267,12 +1280,17 @@ function dibujarRadar(scores) {
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.lineTo(x, y);
-    ctx.strokeStyle = '#2C1F0E';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = '#4A3A22';
+    ctx.lineWidth = 1.5;
     ctx.stroke();
   }
 
-  // Data polygon
+  // Data polygon con gradiente
+  const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+  grad.addColorStop(0, 'rgba(240,192,96,0.45)');
+  grad.addColorStop(0.5, 'rgba(201,146,42,0.35)');
+  grad.addColorStop(1, 'rgba(232,112,26,0.25)');
+
   ctx.beginPath();
   for (let i = 0; i < total; i++) {
     const donKey = dones[i];
@@ -1285,13 +1303,13 @@ function dibujarRadar(scores) {
     else ctx.lineTo(x, y);
   }
   ctx.closePath();
-  ctx.fillStyle = 'rgba(201,146,42,0.15)';
+  ctx.fillStyle = grad;
   ctx.fill();
-  ctx.strokeStyle = 'var(--gold)';
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#F0C060';
+  ctx.lineWidth = 3;
   ctx.stroke();
 
-  // Data points
+  // Data points con brillo
   for (let i = 0; i < total; i++) {
     const donKey = dones[i];
     const score = scores[donKey] || 0;
@@ -1299,30 +1317,66 @@ function dibujarRadar(scores) {
     const val = (score / maxScore) * radius;
     const x = cx + val * Math.cos(angle);
     const y = cy + val * Math.sin(angle);
+
+    // Glow
     ctx.beginPath();
-    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.arc(x, y, 10, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(240,192,96,0.2)';
+    ctx.fill();
+
+    // Punto
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, Math.PI * 2);
     ctx.fillStyle = '#F0C060';
     ctx.fill();
     ctx.strokeStyle = '#1A1208';
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 2;
     ctx.stroke();
   }
 
-  // Labels
-  const labelDist = radius + 38;
-  ctx.fillStyle = '#C4B49A';
-  ctx.font = '11px "Space Grotesk", sans-serif';
+  // Labels con nombres cortos y wrapping
+  const labelDist = radius + 48;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
+
   for (let i = 0; i < total; i++) {
     const donKey = dones[i];
     const meta = DONES_META[donKey];
     const angle = (Math.PI * 2 / total) * i - Math.PI / 2;
     const lx = cx + labelDist * Math.cos(angle);
     const ly = cy + labelDist * Math.sin(angle);
-    // Short name for label
-    const nombre = meta.nombre.replace('Don de ','').replace('Talento de ','');
+
+    // Nombre corto: solo la palabra clave
+    const nombresCortos = {
+      servicio: 'Servicio',
+      ensenanza: 'Enseñanza',
+      exhortacion: 'Exhortación',
+      generosidad: 'Generosidad',
+      liderazgo: 'Liderazgo',
+      misericordia: 'Misericordia',
+      musicaArte: 'Música/Arte',
+      hospitalidad: 'Hospitalidad',
+      administracion: 'Admin.'
+    };
+    const nombre = nombresCortos[donKey] || meta.nombre.replace('Don de ','').replace('Talento de ','');
+
+    // Score al lado
+    const score = scores[donKey] || 0;
+
+    // Fondo del label
+    ctx.font = 'bold 12px "Space Grotesk", sans-serif';
+    const textW = ctx.measureText(nombre).width;
+    ctx.fillStyle = 'rgba(35,24,9,0.8)';
+    ctx.fillRect(lx - textW/2 - 8, ly - 10, textW + 16, 20);
+
+    // Texto
+    ctx.fillStyle = score > 0 ? '#F0C060' : '#7A6A52';
     ctx.fillText(nombre, lx, ly);
+
+    // Score debajo
+    ctx.font = 'bold 10px "Space Grotesk", sans-serif';
+    ctx.fillStyle = '#C9922A';
+    ctx.fillText(score + '/15', lx, ly + 14);
   }
 }
 
