@@ -511,6 +511,19 @@
     min-width: 60px;
   }
 
+  .esc-opcion-row.is-correct {
+    background: rgba(201,146,42,0.12);
+    border: 1px solid var(--gold);
+    border-radius: 8px;
+    padding: 4px 8px;
+  }
+
+  .esc-opcion-row.is-correct .esc-opcion-input {
+    border-color: var(--gold);
+    color: var(--white);
+    font-weight: 600;
+  }
+
   .esc-actions {
     display: flex;
     gap: 10px;
@@ -556,8 +569,8 @@
   </div>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('resultados')">Resultados</button>
-    <button class="tab-btn" onclick="switchTab('escenarios')">Escenarios</button>
+    <button class="tab-btn active" onclick="switchTab('resultados', this)">Resultados</button>
+    <button class="tab-btn" onclick="switchTab('escenarios', this)">Escenarios</button>
   </div>
 
   <!-- TAB: RESULTADOS -->
@@ -876,10 +889,10 @@ document.getElementById('modalOverlay').addEventListener('click', function(e) {
 // ── EDITOR ESCENARIOS ──
 let escenariosData = [];
 
-function switchTab(tab) {
+function switchTab(tab, btnEl) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  event.target.classList.add('active');
+  btnEl.classList.add('active');
   document.getElementById('tab-' + tab).classList.add('active');
   if (tab === 'escenarios' && escenariosData.length === 0) {
     cargarEscenariosAdmin();
@@ -907,7 +920,7 @@ function renderEditorEscenarios() {
   container.innerHTML = '';
 
   const donOptions = Object.keys(DONES_META).map(k =>
-    `<option value="${k}">${DONES_META[k].icon} ${DONES_META[k].nombre}</option>`
+    `<option value="${k}"${k === '__SELECTED__' ? ' selected' : ''}>${DONES_META[k].icon} ${DONES_META[k].nombre}</option>`
   ).join('');
 
   escenariosData.forEach((esc, i) => {
@@ -917,18 +930,20 @@ function renderEditorEscenarios() {
     const opcionesHTML = esc.opciones.map((op, oi) => {
       const isCorrect = esc.correcta === oi;
       return `
-        <div class="esc-opcion-row">
+        <div class="esc-opcion-row${isCorrect ? ' is-correct' : ''}">
           <input type="radio" name="correcta-${esc.id}" class="esc-opcion-radio" ${isCorrect ? 'checked' : ''} onchange="marcarCorrecta(${esc.id}, ${oi})">
           <input type="text" class="esc-opcion-input" value="${op.replace(/"/g, '&quot;')}" oninput="actualizarOpcion(${esc.id}, ${oi}, this.value)">
-          <span class="esc-opcion-correcta">${isCorrect ? '✓ Correcta' : ''}</span>
+          <span class="esc-opcion-correcta">${isCorrect ? '✓ RESPUESTA' : ''}</span>
         </div>`;
     }).join('');
+
+    const donSelectHTML = donOptions.replace('__SELECTED__', esc.don_id);
 
     card.innerHTML = `
       <div class="esc-card-header">
         <span class="esc-card-title">Escenario #${esc.orden}</span>
         <select class="esc-don-select" onchange="cambiarDon(${esc.id}, this.value)">
-          ${donOptions.replace(`value="${esc.don_id}"`, `value="${esc.don_id}" selected`)}
+          ${donSelectHTML}
         </select>
       </div>
       <div class="esc-field">
