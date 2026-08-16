@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Descubre tus Dones — Lifehouse PLD</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -499,16 +500,15 @@
     background: var(--card-bg);
     border: 1px solid #3A2A14;
     border-radius: var(--radius);
-    padding: 16px;
+    padding: 24px 16px;
     margin-bottom: 32px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    position: relative;
+    min-height: 400px;
   }
 
   .radar-wrap canvas {
     max-width: 100%;
-    height: auto;
+    max-height: 520px;
   }
 
   .result-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 40px; }
@@ -911,7 +911,7 @@
   </div>
 
   <div class="radar-wrap" id="radarWrap">
-    <canvas id="radarCanvas" width="520" height="520"></canvas>
+    <canvas id="radarCanvas"></canvas>
   </div>
 
   <div class="result-list" id="result-list"></div>
@@ -1228,156 +1228,89 @@ function autoCompletar() {
   mostrarPregunta(ESCENARIOS.length - 1);
 }
 
+let radarChart = null;
+
 function dibujarRadar(scores) {
   const canvas = document.getElementById('radarCanvas');
-  let size = Math.min(560, canvas.parentElement.clientWidth - 32);
-  if (!size || size < 200) size = 480;
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext('2d');
-  const cx = size / 2, cy = size / 2;
-  const radius = Math.max(80, size * 0.32);
-  const niveles = 3;
   const dones = Object.keys(DONES_META);
-  const total = dones.length;
-  const maxScore = 15;
 
-  ctx.clearRect(0, 0, size, size);
+  const nombresCortos = {
+    servicio: 'Servicio',
+    ensenanza: 'Enseñanza',
+    exhortacion: 'Exhortación',
+    generosidad: 'Generosidad',
+    liderazgo: 'Liderazgo',
+    misericordia: 'Misericordia',
+    musicaArte: 'Música/Arte',
+    hospitalidad: 'Hospitalidad',
+    administracion: 'Administración'
+  };
 
-  // Fondo circular suave
-  ctx.beginPath();
-  ctx.arc(cx, cy, radius + 20, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(44,31,14,0.4)';
-  ctx.fill();
+  const labels = dones.map(k => nombresCortos[k] || k);
+  const data = dones.map(k => scores[k] || 0);
 
-  // Grid círculos con relleno gradual
-  for (let n = niveles; n >= 1; n--) {
-    const r = (radius / niveles) * n;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.fillStyle = n === niveles ? 'rgba(35,24,9,0.6)' : 'rgba(44,31,14,0.3)';
-    ctx.fill();
-    ctx.strokeStyle = '#4A3A22';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-  }
+  if (radarChart) radarChart.destroy();
 
-  // Nivel labels
-  for (let n = 1; n <= niveles; n++) {
-    const r = (radius / niveles) * n;
-    ctx.fillStyle = '#5A4A32';
-    ctx.font = 'bold 10px "Space Grotesk", sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(Math.round((maxScore / niveles) * n), cx + 6, cy - r);
-  }
-
-  // Axis lines
-  for (let i = 0; i < total; i++) {
-    const angle = (Math.PI * 2 / total) * i - Math.PI / 2;
-    const x = cx + radius * Math.cos(angle);
-    const y = cy + radius * Math.sin(angle);
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(x, y);
-    ctx.strokeStyle = '#4A3A22';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-  }
-
-  // Data polygon con gradiente
-  const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-  grad.addColorStop(0, 'rgba(240,192,96,0.45)');
-  grad.addColorStop(0.5, 'rgba(201,146,42,0.35)');
-  grad.addColorStop(1, 'rgba(232,112,26,0.25)');
-
-  ctx.beginPath();
-  for (let i = 0; i < total; i++) {
-    const donKey = dones[i];
-    const score = scores[donKey] || 0;
-    const angle = (Math.PI * 2 / total) * i - Math.PI / 2;
-    const val = (score / maxScore) * radius;
-    const x = cx + val * Math.cos(angle);
-    const y = cy + val * Math.sin(angle);
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  }
-  ctx.closePath();
-  ctx.fillStyle = grad;
-  ctx.fill();
-  ctx.strokeStyle = '#F0C060';
-  ctx.lineWidth = 3;
-  ctx.stroke();
-
-  // Data points con brillo
-  for (let i = 0; i < total; i++) {
-    const donKey = dones[i];
-    const score = scores[donKey] || 0;
-    const angle = (Math.PI * 2 / total) * i - Math.PI / 2;
-    const val = (score / maxScore) * radius;
-    const x = cx + val * Math.cos(angle);
-    const y = cy + val * Math.sin(angle);
-
-    // Glow
-    ctx.beginPath();
-    ctx.arc(x, y, 10, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(240,192,96,0.2)';
-    ctx.fill();
-
-    // Punto
-    ctx.beginPath();
-    ctx.arc(x, y, 6, 0, Math.PI * 2);
-    ctx.fillStyle = '#F0C060';
-    ctx.fill();
-    ctx.strokeStyle = '#1A1208';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  }
-
-  // Labels con nombres cortos y wrapping
-  const labelDist = radius + 48;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-
-  for (let i = 0; i < total; i++) {
-    const donKey = dones[i];
-    const meta = DONES_META[donKey];
-    const angle = (Math.PI * 2 / total) * i - Math.PI / 2;
-    const lx = cx + labelDist * Math.cos(angle);
-    const ly = cy + labelDist * Math.sin(angle);
-
-    // Nombre corto: solo la palabra clave
-    const nombresCortos = {
-      servicio: 'Servicio',
-      ensenanza: 'Enseñanza',
-      exhortacion: 'Exhortación',
-      generosidad: 'Generosidad',
-      liderazgo: 'Liderazgo',
-      misericordia: 'Misericordia',
-      musicaArte: 'Música/Arte',
-      hospitalidad: 'Hospitalidad',
-      administracion: 'Admin.'
-    };
-    const nombre = nombresCortos[donKey] || meta.nombre.replace('Don de ','').replace('Talento de ','');
-
-    // Score al lado
-    const score = scores[donKey] || 0;
-
-    // Fondo del label
-    ctx.font = 'bold 12px "Space Grotesk", sans-serif';
-    const textW = ctx.measureText(nombre).width;
-    ctx.fillStyle = 'rgba(35,24,9,0.8)';
-    ctx.fillRect(lx - textW/2 - 8, ly - 10, textW + 16, 20);
-
-    // Texto
-    ctx.fillStyle = score > 0 ? '#F0C060' : '#7A6A52';
-    ctx.fillText(nombre, lx, ly);
-
-    // Score debajo
-    ctx.font = 'bold 10px "Space Grotesk", sans-serif';
-    ctx.fillStyle = '#C9922A';
-    ctx.fillText(score + '/15', lx, ly + 14);
-  }
+  radarChart = new Chart(canvas, {
+    type: 'radar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Mis dones',
+        data: data,
+        backgroundColor: 'rgba(201,146,42,0.35)',
+        borderColor: '#F0C060',
+        borderWidth: 3,
+        pointBackgroundColor: '#F0C060',
+        pointBorderColor: '#1A1208',
+        pointBorderWidth: 2,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        pointHoverBackgroundColor: '#E8701A',
+        fill: true,
+        tension: 0.1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#231809',
+          titleColor: '#F0C060',
+          bodyColor: '#FBF5EA',
+          borderColor: '#C9922A',
+          borderWidth: 1,
+          padding: 12,
+          titleFont: { family: 'Space Grotesk', size: 13, weight: 'bold' },
+          bodyFont: { family: 'Inter', size: 13 },
+          callbacks: {
+            label: function(ctx) { return ctx.parsed.r + ' / 15'; }
+          }
+        }
+      },
+      scales: {
+        r: {
+          min: 0,
+          max: 15,
+          ticks: {
+            stepSize: 5,
+            color: '#5A4A32',
+            font: { family: 'Space Grotesk', size: 10 },
+            backdropColor: 'transparent'
+          },
+          grid: { color: '#3A2A14', lineWidth: 1 },
+          angleLines: { color: '#3A2A14', lineWidth: 1 },
+          pointLabels: {
+            color: '#F0C060',
+            font: { family: 'Space Grotesk', size: 13, weight: 'bold' },
+            padding: 12
+          }
+        }
+      }
+    }
+  });
 }
 
 function calcularResultados() {
