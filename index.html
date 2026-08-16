@@ -1000,6 +1000,8 @@ function goToForm() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+let intentosForm = 0;
+
 function validarFormulario() {
   const nombre = document.getElementById('f-nombre').value.trim();
   const email = document.getElementById('f-email').value.trim();
@@ -1007,8 +1009,28 @@ function validarFormulario() {
   const edad = document.getElementById('f-edad').value.trim();
   const err = document.getElementById('form-error');
 
-  if (!nombre) { err.textContent = 'Por favor ingresa tu nombre.'; return; }
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { err.textContent = 'Por favor ingresa un correo válido.'; return; }
+  if (!nombre) {
+    intentosForm++;
+    if (intentosForm >= 3) {
+      err.textContent = '';
+      datosUsuario = { nombre: 'Invitado', email: '', iglesia, edad };
+      goToStep(1);
+      return;
+    }
+    err.textContent = 'Por favor ingresa tu nombre.';
+    return;
+  }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    intentosForm++;
+    if (intentosForm >= 3) {
+      err.textContent = '';
+      datosUsuario = { nombre, email: '', iglesia, edad };
+      goToStep(1);
+      return;
+    }
+    err.textContent = 'Por favor ingresa un correo válido.';
+    return;
+  }
 
   err.textContent = '';
   datosUsuario = { nombre, email, iglesia, edad };
