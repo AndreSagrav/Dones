@@ -615,6 +615,9 @@
 
   <!-- TAB: ESCENARIOS -->
   <div class="tab-content" id="tab-escenarios">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+      <button class="btn btn-sm" onclick="mergearPreguntas()">🔀 MERGE</button>
+    </div>
     <div class="esc-editor" id="esc-editor">
       <p style="color:var(--muted);text-align:center;padding:40px;">Cargando escenarios...</p>
     </div>
@@ -1114,6 +1117,46 @@ async function guardarEscenario(escId) {
   } catch (e) {
     console.error('Error guardando escenario:', e);
     alert('Error al guardar. Revisa la consola.');
+  }
+}
+
+async function mergearPreguntas() {
+  if (escenariosData.length === 0) {
+    alert('Primero carga los escenarios.');
+    return;
+  }
+  if (!confirm('¿Seguro que quieres mezclar el orden de las preguntas en la vista pública?')) return;
+
+  // Generar orden aleatorio
+  const ids = escenariosData.map(e => e.id);
+  const nuevosOrdenes = [];
+  for (let i = ids.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+  }
+  // ids ahora está mezclado, asignar orden 1-27
+  ids.forEach((id, idx) => nuevosOrdenes.push({ id, orden: idx + 1 }));
+
+  try {
+    // Actualizar cada escenario con su nuevo orden
+    for (const item of nuevosOrdenes) {
+      await fetch(`${SUPABASE_URL}/rest/v1/escenarios?id=eq.${item.id}`, {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ orden: item.orden })
+      });
+    }
+    // Recargar para reflejar el nuevo orden en el admin
+    await cargarEscenariosAdmin();
+    alert('✓ MERGE completo. Las preguntas se muestran en nuevo orden en la vista pública.');
+  } catch (e) {
+    console.error('Error en MERGE:', e);
+    alert('Error al mezclar. Revisa la consola.');
   }
 }
 </script>
