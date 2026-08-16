@@ -958,50 +958,103 @@ function renderEditorEscenarios() {
   const container = document.getElementById('esc-editor');
   container.innerHTML = '';
 
-  const donOptions = Object.keys(DONES_META).map(k =>
-    `<option value="${k}"${k === '__SELECTED__' ? ' selected' : ''}>${DONES_META[k].icon} ${DONES_META[k].nombre}</option>`
-  ).join('');
-
-  escenariosData.forEach((esc, i) => {
+  escenariosData.forEach(esc => {
     const card = document.createElement('div');
     card.className = 'esc-card';
 
-    const opcionesHTML = esc.opciones.map((op, oi) => {
+    // Header
+    const header = document.createElement('div');
+    header.className = 'esc-card-header';
+    header.innerHTML = `<span class="esc-card-title">Escenario #${esc.orden}</span>`;
+
+    const select = document.createElement('select');
+    select.className = 'esc-don-select';
+    Object.keys(DONES_META).forEach(k => {
+      const opt = document.createElement('option');
+      opt.value = k;
+      opt.textContent = `${DONES_META[k].icon} ${DONES_META[k].nombre}`;
+      if (k === esc.don_id) opt.selected = true;
+      select.appendChild(opt);
+    });
+    select.onchange = () => cambiarDon(esc.id, select.value);
+    header.appendChild(select);
+    card.appendChild(header);
+
+    // Título
+    const titleField = document.createElement('div');
+    titleField.className = 'esc-field';
+    titleField.innerHTML = '<label>Título</label>';
+    const titleInput = document.createElement('input');
+    titleInput.type = 'text';
+    titleInput.value = esc.titulo;
+    titleInput.oninput = () => actualizarCampo(esc.id, 'titulo', titleInput.value);
+    titleField.appendChild(titleInput);
+    card.appendChild(titleField);
+
+    // Texto
+    const textField = document.createElement('div');
+    textField.className = 'esc-field';
+    textField.innerHTML = '<label>Situación</label>';
+    const textInput = document.createElement('textarea');
+    textInput.value = esc.texto;
+    textInput.oninput = () => actualizarCampo(esc.id, 'texto', textInput.value);
+    textField.appendChild(textInput);
+    card.appendChild(textField);
+
+    // Opciones
+    const opField = document.createElement('div');
+    opField.className = 'esc-field';
+    opField.innerHTML = '<label>Opciones (marca la respuesta correcta)</label>';
+    const opWrap = document.createElement('div');
+    opWrap.className = 'esc-opciones';
+
+    esc.opciones.forEach((op, oi) => {
       const isCorrect = esc.correcta === oi;
-      return `
-        <div class="esc-opcion-row${isCorrect ? ' is-correct' : ''}">
-          <input type="radio" name="correcta-${esc.id}" class="esc-opcion-radio" ${isCorrect ? 'checked' : ''} onchange="marcarCorrecta(${esc.id}, ${oi})">
-          <input type="text" class="esc-opcion-input" value="${op.replace(/"/g, '&quot;')}" oninput="actualizarOpcion(${esc.id}, ${oi}, this.value)">
-          <span class="esc-opcion-correcta">${isCorrect ? '✓ RESPUESTA' : ''}</span>
-        </div>`;
-    }).join('');
+      const row = document.createElement('div');
+      row.className = 'esc-opcion-row' + (isCorrect ? ' is-correct' : '');
 
-    const donSelectHTML = donOptions.replace('__SELECTED__', esc.don_id);
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'correcta-' + esc.id;
+      radio.className = 'esc-opcion-radio';
+      radio.checked = isCorrect;
+      radio.onchange = () => marcarCorrecta(esc.id, oi);
 
-    card.innerHTML = `
-      <div class="esc-card-header">
-        <span class="esc-card-title">Escenario #${esc.orden}</span>
-        <select class="esc-don-select" onchange="cambiarDon(${esc.id}, this.value)">
-          ${donSelectHTML}
-        </select>
-      </div>
-      <div class="esc-field">
-        <label>Título</label>
-        <input type="text" value="${esc.titulo.replace(/"/g, '&quot;')}" oninput="actualizarCampo(${esc.id}, 'titulo', this.value)">
-      </div>
-      <div class="esc-field">
-        <label>Situación</label>
-        <textarea oninput="actualizarCampo(${esc.id}, 'texto', this.value)">${esc.texto}</textarea>
-      </div>
-      <div class="esc-field">
-        <label>Opciones (marca la respuesta correcta)</label>
-        <div class="esc-opciones">${opcionesHTML}</div>
-      </div>
-      <div class="esc-actions">
-        <button class="btn btn-sm" onclick="guardarEscenario(${esc.id})">Guardar</button>
-        <span class="esc-saved" id="saved-${esc.id}">✓ Guardado</span>
-      </div>
-    `;
+      const opInput = document.createElement('input');
+      opInput.type = 'text';
+      opInput.className = 'esc-opcion-input';
+      opInput.value = String(op || '');
+      opInput.placeholder = 'Texto de la opción ' + (oi + 1);
+      opInput.oninput = () => actualizarOpcion(esc.id, oi, opInput.value);
+
+      const badge = document.createElement('span');
+      badge.className = 'esc-opcion-correcta';
+      badge.textContent = isCorrect ? '✓ RESPUESTA' : '';
+
+      row.appendChild(radio);
+      row.appendChild(opInput);
+      row.appendChild(badge);
+      opWrap.appendChild(row);
+    });
+
+    opField.appendChild(opWrap);
+    card.appendChild(opField);
+
+    // Actions
+    const actions = document.createElement('div');
+    actions.className = 'esc-actions';
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-sm';
+    btn.textContent = 'Guardar';
+    btn.onclick = () => guardarEscenario(esc.id);
+    const saved = document.createElement('span');
+    saved.className = 'esc-saved';
+    saved.id = 'saved-' + esc.id;
+    saved.textContent = '✓ Guardado';
+    actions.appendChild(btn);
+    actions.appendChild(saved);
+    card.appendChild(actions);
+
     container.appendChild(card);
   });
 }
