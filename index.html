@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Descubre tus Dones — Lifehouse PLD</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1228,11 +1227,23 @@ function autoCompletar() {
   mostrarPregunta(ESCENARIOS.length - 1);
 }
 
-let radarChart = null;
-
 function dibujarRadar(scores) {
   const canvas = document.getElementById('radarCanvas');
+  const size = Math.min(520, canvas.parentElement.clientWidth - 48);
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = size * dpr;
+  canvas.height = size * dpr;
+  canvas.style.width = size + 'px';
+  canvas.style.height = size + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const cx = size / 2;
+  const cy = size / 2;
+  const radius = size * 0.34;
   const dones = Object.keys(DONES_META);
+  const total = dones.length;
+  const maxScore = 15;
 
   const nombresCortos = {
     servicio: 'Servicio',
@@ -1241,80 +1252,155 @@ function dibujarRadar(scores) {
     generosidad: 'Generosidad',
     liderazgo: 'Liderazgo',
     misericordia: 'Misericordia',
-    musicaArte: 'Música/Arte',
+    musicaArte: 'Música y\nArte',
     hospitalidad: 'Hospitalidad',
     administracion: 'Administración'
   };
 
-  const labels = dones.map(k => nombresCortos[k] || k);
-  const data = dones.map(k => scores[k] || 0);
+  ctx.clearRect(0, 0, size, size);
 
-  if (radarChart) radarChart.destroy();
+  // ── Fondo circular oscuro ──
+  const bgGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius + 60);
+  bgGrad.addColorStop(0, 'rgba(44,31,14,0.55)');
+  bgGrad.addColorStop(1, 'rgba(26,18,8,0.0)');
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius + 55, 0, Math.PI * 2);
+  ctx.fillStyle = bgGrad;
+  ctx.fill();
 
-  radarChart = new Chart(canvas, {
-    type: 'radar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Mis dones',
-        data: data,
-        backgroundColor: 'rgba(232,112,26,0.45)',
-        borderColor: '#E8701A',
-        borderWidth: 3,
-        pointBackgroundColor: '#F0C060',
-        pointBorderColor: '#1A1208',
-        pointBorderWidth: 2,
-        pointRadius: 7,
-        pointHoverRadius: 10,
-        pointHoverBackgroundColor: '#FFFFFF',
-        pointHoverBorderColor: '#E8701A',
-        fill: true
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      aspectRatio: 1.1,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#231809',
-          titleColor: '#F0C060',
-          bodyColor: '#FBF5EA',
-          borderColor: '#C9922A',
-          borderWidth: 1,
-          padding: 12,
-          titleFont: { family: 'Space Grotesk', size: 13, weight: 'bold' },
-          bodyFont: { family: 'Inter', size: 13 },
-          callbacks: {
-            label: function(ctx) { return ctx.parsed.r + ' / 15'; }
-          }
-        }
-      },
-      scales: {
-        r: {
-          min: 0,
-          max: 15,
-          ticks: {
-            stepSize: 5,
-            color: '#7A6A52',
-            font: { family: 'Space Grotesk', size: 11 },
-            backdropColor: 'transparent',
-            showLabelBackdrop: true,
-            backdropColor: '#231809',
-            backdropPadding: 4
-          },
-          grid: { color: 'rgba(74,58,34,0.6)', lineWidth: 1 },
-          angleLines: { color: 'rgba(74,58,34,0.6)', lineWidth: 1 },
-          pointLabels: {
-            color: '#F0C060',
-            font: { family: 'Space Grotesk', size: 14, weight: 'bold' },
-            padding: 16
-          }
-        }
-      }
-    }
+  // ── Grid con anillos ──
+  for (let n = 1; n <= 3; n++) {
+    const r = (radius / 3) * n;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = n === 3 ? '#4A3A22' : '#332514';
+    ctx.lineWidth = n === 3 ? 2 : 1.2;
+    ctx.stroke();
+
+    // Etiquetas de escala (5, 10, 15)
+    ctx.fillStyle = '#5A4A32';
+    ctx.font = '600 10px "Space Grotesk", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(n * 5, cx + 5, cy - r);
+  }
+
+  // ── Líneas de eje ──
+  for (let i = 0; i < total; i++) {
+    const angle = (Math.PI * 2 / total) * i - Math.PI / 2;
+    const x = cx + radius * Math.cos(angle);
+    const y = cy + radius * Math.sin(angle);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = '#332514';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // ── Polígono de datos ──
+  const pts = [];
+  for (let i = 0; i < total; i++) {
+    const donKey = dones[i];
+    const score = Math.max(0.5, scores[donKey] || 0);
+    const angle = (Math.PI * 2 / total) * i - Math.PI / 2;
+    const val = (score / maxScore) * radius;
+    pts.push({ x: cx + val * Math.cos(angle), y: cy + val * Math.sin(angle), score, donKey });
+  }
+
+  // Sombra exterior
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+  ctx.closePath();
+  ctx.shadowColor = 'rgba(240,192,96,0.45)';
+  ctx.shadowBlur = 24;
+  ctx.fillStyle = 'rgba(201,146,42,0.25)';
+  ctx.fill();
+  ctx.restore();
+
+  // Relleno con gradiente
+  const dataGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+  dataGrad.addColorStop(0, 'rgba(240,192,96,0.35)');
+  dataGrad.addColorStop(0.6, 'rgba(201,146,42,0.25)');
+  dataGrad.addColorStop(1, 'rgba(232,112,26,0.15)');
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+  ctx.closePath();
+  ctx.fillStyle = dataGrad;
+  ctx.fill();
+
+  // Borde brillante
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+  ctx.closePath();
+  ctx.strokeStyle = '#F0C060';
+  ctx.lineWidth = 2.5;
+  ctx.shadowColor = 'rgba(240,192,96,0.6)';
+  ctx.shadowBlur = 10;
+  ctx.stroke();
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+
+  // ── Puntos con glow ──
+  pts.forEach(p => {
+    // Glow
+    const glowGrad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 12);
+    glowGrad.addColorStop(0, 'rgba(240,192,96,0.5)');
+    glowGrad.addColorStop(1, 'rgba(240,192,96,0)');
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 12, 0, Math.PI * 2);
+    ctx.fillStyle = glowGrad;
+    ctx.fill();
+
+    // Punto
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 5.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#F0C060';
+    ctx.fill();
+    ctx.strokeStyle = '#1A1208';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Score label junto al punto
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '700 11px "Space Grotesk", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(p.score, p.x, p.y - 9);
   });
+
+  // ── Labels ──
+  const labelDist = radius + 48;
+  for (let i = 0; i < total; i++) {
+    const donKey = dones[i];
+    const angle = (Math.PI * 2 / total) * i - Math.PI / 2;
+    const lx = cx + labelDist * Math.cos(angle);
+    const ly = cy + labelDist * Math.sin(angle);
+    const nombre = nombresCortos[donKey] || donKey;
+
+    // Si el nombre tiene \n, dibujar dos líneas
+    const lines = nombre.split('\n');
+
+    ctx.font = '700 11px "Space Grotesk", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Fondo sutil
+    const maxW = Math.max(...lines.map(l => ctx.measureText(l).width));
+    const lineH = 14;
+    const totalH = lines.length * lineH;
+    ctx.fillStyle = 'rgba(26,18,8,0.75)';
+    ctx.fillRect(lx - maxW/2 - 8, ly - totalH/2 - 2, maxW + 16, totalH + 6);
+
+    lines.forEach((line, li) => {
+      ctx.fillStyle = '#D4C4A0';
+      ctx.fillText(line, lx, ly - (lines.length - 1) * lineH/2 + li * lineH);
+    });
+  }
 }
 
 function calcularResultados() {
