@@ -504,7 +504,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
   }
 
   .radar-wrap canvas {
@@ -1267,10 +1266,11 @@ function dibujarRadar(scores) {
   let maxLabelW = 0;
   dones.forEach(k => { maxLabelW = Math.max(maxLabelW, ctx.measureText(nombres[k]).width); });
 
-  // Radio: espacio total menos el margen que necesitan los labels
-  const gap = 18;                       // separación radar → texto
-  const margin = maxLabelW / 2 + gap + 8;
-  const radius = Math.max(90, size / 2 - margin);
+  // Radio: los labels laterales se alinean left/right, así que ocupan
+  // el ANCHO COMPLETO hacia afuera desde su punto de anclaje.
+  const gap = 14;                       // separación radar → texto
+  const margin = maxLabelW + gap + 6;   // ancho completo, no la mitad
+  const radius = Math.max(70, size / 2 - margin);
 
   ctx.clearRect(0, 0, size, size);
 
