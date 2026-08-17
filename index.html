@@ -496,15 +496,15 @@
 
   /* ── RESULTS ── */
   .radar-wrap {
-    background: var(--card-bg);
+    background: radial-gradient(ellipse at center, #2A1D0C 0%, var(--card-bg) 70%);
     border: 1px solid #3A2A14;
     border-radius: var(--radius);
-    padding: 32px 24px;
+    padding: 20px;
     margin-bottom: 32px;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 480px;
+    overflow: hidden;
   }
 
   .radar-wrap canvas {
@@ -1232,187 +1232,195 @@ function autoCompletar() {
 function dibujarRadar(scores) {
   const canvas = document.getElementById('radarCanvas');
   const wrap = canvas.parentElement;
-  const wrapW = wrap.clientWidth - 48; // padding interior
-  const wrapH = Math.max(480, wrapW);
-  const size = Math.max(480, Math.min(600, wrapW, wrapH));
+  const avail = Math.max(340, (wrap.clientWidth || 560) - 40);
+  const size = Math.min(620, avail);
   const dpr = window.devicePixelRatio || 1;
+
   canvas.width = size * dpr;
   canvas.height = size * dpr;
   canvas.style.width = size + 'px';
   canvas.style.height = size + 'px';
   const ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   const cx = size / 2;
   const cy = size / 2;
   const dones = Object.keys(DONES_META);
   const total = dones.length;
   const maxScore = 15;
-  // Radio: usar maximo espacio dejando margen para labels
-  const radius = size * 0.36;
-  // Distancia a labels: lo que sobra del radio al borde
-  const labelDist = size * 0.48;
 
-  const nombresCortos = {
+  const FONT_LABEL = '600 12px "Space Grotesk", system-ui, sans-serif';
+  const nombres = {
     servicio: 'Servicio',
     ensenanza: 'Enseñanza',
     exhortacion: 'Exhortación',
     generosidad: 'Generosidad',
     liderazgo: 'Liderazgo',
     misericordia: 'Misericordia',
-    musicaArte: 'Música y\nArte',
+    musicaArte: 'Música y Arte',
     hospitalidad: 'Hospitalidad',
     administracion: 'Administración'
   };
 
+  // Medir el label mas ancho para reservar margen exacto
+  ctx.font = FONT_LABEL;
+  let maxLabelW = 0;
+  dones.forEach(k => { maxLabelW = Math.max(maxLabelW, ctx.measureText(nombres[k]).width); });
+
+  // Radio: espacio total menos el margen que necesitan los labels
+  const gap = 18;                       // separación radar → texto
+  const margin = maxLabelW / 2 + gap + 8;
+  const radius = Math.max(90, size / 2 - margin);
+
   ctx.clearRect(0, 0, size, size);
 
-  // ── Fondo circular ──
-  const bgGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, size * 0.48);
-  bgGrad.addColorStop(0, 'rgba(44,31,14,0.5)');
-  bgGrad.addColorStop(0.85, 'rgba(26,18,8,0.15)');
-  bgGrad.addColorStop(1, 'rgba(26,18,8,0)');
+  // ═══ HALO DE FONDO ═══
+  const halo = ctx.createRadialGradient(cx, cy, radius * 0.1, cx, cy, radius * 1.15);
+  halo.addColorStop(0, 'rgba(201,146,42,0.10)');
+  halo.addColorStop(0.7, 'rgba(201,146,42,0.03)');
+  halo.addColorStop(1, 'rgba(201,146,42,0)');
   ctx.beginPath();
-  ctx.arc(cx, cy, size * 0.48, 0, Math.PI * 2);
-  ctx.fillStyle = bgGrad;
+  ctx.arc(cx, cy, radius * 1.15, 0, Math.PI * 2);
+  ctx.fillStyle = halo;
   ctx.fill();
 
-  // ── Grid anillos ──
-  for (let n = 1; n <= 3; n++) {
-    const r = (radius / 3) * n;
+  // ═══ GRID: polígonos concéntricos ═══
+  const rings = 5;
+  for (let n = rings; n >= 1; n--) {
+    const r = (radius / rings) * n;
     ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.strokeStyle = n === 3 ? '#4A3A22' : '#332514';
-    ctx.lineWidth = n === 3 ? 2 : 1.2;
+    for (let i = 0; i < total; i++) {
+      const a = (Math.PI * 2 / total) * i - Math.PI / 2;
+      const x = cx + r * Math.cos(a);
+      const y = cy + r * Math.sin(a);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = n % 2 === 0 ? 'rgba(255,255,255,0.012)' : 'transparent';
+    ctx.fill();
+    ctx.strokeStyle = n === rings ? 'rgba(201,146,42,0.30)' : 'rgba(201,146,42,0.10)';
+    ctx.lineWidth = n === rings ? 1.5 : 1;
     ctx.stroke();
-
-    ctx.fillStyle = '#5A4A32';
-    ctx.font = '600 11px "Space Grotesk", sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(n * 5, cx + 6, cy - r);
   }
 
-  // ── Ejes ──
+  // ═══ EJES ═══
   for (let i = 0; i < total; i++) {
-    const angle = (Math.PI * 2 / total) * i - Math.PI / 2;
-    const x = cx + radius * Math.cos(angle);
-    const y = cy + radius * Math.sin(angle);
+    const a = (Math.PI * 2 / total) * i - Math.PI / 2;
     ctx.beginPath();
     ctx.moveTo(cx, cy);
-    ctx.lineTo(x, y);
-    ctx.strokeStyle = '#332514';
+    ctx.lineTo(cx + radius * Math.cos(a), cy + radius * Math.sin(a));
+    ctx.strokeStyle = 'rgba(201,146,42,0.14)';
     ctx.lineWidth = 1;
     ctx.stroke();
   }
 
-  // ── Polígono de datos ──
-  const pts = [];
-  for (let i = 0; i < total; i++) {
-    const donKey = dones[i];
-    const score = Math.max(0.3, scores[donKey] || 0);
-    const angle = (Math.PI * 2 / total) * i - Math.PI / 2;
-    const val = (score / maxScore) * radius;
-    pts.push({ x: cx + val * Math.cos(angle), y: cy + val * Math.sin(angle), score: scores[donKey] || 0, donKey });
+  // ═══ ESCALA (3, 6, 9, 12, 15) ═══
+  ctx.font = '600 9px "Space Grotesk", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (let n = 1; n <= rings; n++) {
+    const r = (radius / rings) * n;
+    const v = Math.round((maxScore / rings) * n);
+    ctx.fillStyle = 'rgba(26,18,8,0.9)';
+    const w = ctx.measureText(v).width + 8;
+    ctx.fillRect(cx - w / 2, cy - r - 6, w, 12);
+    ctx.fillStyle = '#6B5940';
+    ctx.fillText(v, cx, cy - r);
   }
 
-  // Sombra
+  // ═══ PUNTOS DE DATOS ═══
+  const pts = dones.map((k, i) => {
+    const raw = scores[k] || 0;
+    const a = (Math.PI * 2 / total) * i - Math.PI / 2;
+    const v = (Math.max(raw, 0.15) / maxScore) * radius;
+    return { x: cx + v * Math.cos(a), y: cy + v * Math.sin(a), score: raw, key: k, angle: a };
+  });
+
+  const tracePath = () => {
+    ctx.beginPath();
+    pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+    ctx.closePath();
+  };
+
+  // Glow exterior
   ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(pts[0].x, pts[0].y);
-  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-  ctx.closePath();
-  ctx.shadowColor = 'rgba(240,192,96,0.4)';
-  ctx.shadowBlur = 20;
-  ctx.fillStyle = 'rgba(201,146,42,0.2)';
+  ctx.shadowColor = 'rgba(240,192,96,0.55)';
+  ctx.shadowBlur = 28;
+  tracePath();
+  ctx.fillStyle = 'rgba(201,146,42,0.18)';
   ctx.fill();
   ctx.restore();
 
-  // Relleno
-  const dataGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-  dataGrad.addColorStop(0, 'rgba(240,192,96,0.40)');
-  dataGrad.addColorStop(0.5, 'rgba(201,146,42,0.30)');
-  dataGrad.addColorStop(1, 'rgba(232,112,26,0.15)');
-  ctx.beginPath();
-  ctx.moveTo(pts[0].x, pts[0].y);
-  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-  ctx.closePath();
-  ctx.fillStyle = dataGrad;
+  // Relleno principal
+  const fill = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+  fill.addColorStop(0, 'rgba(255,214,130,0.42)');
+  fill.addColorStop(0.55, 'rgba(201,146,42,0.30)');
+  fill.addColorStop(1, 'rgba(232,112,26,0.16)');
+  tracePath();
+  ctx.fillStyle = fill;
   ctx.fill();
 
-  // Borde
-  ctx.beginPath();
-  ctx.moveTo(pts[0].x, pts[0].y);
-  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-  ctx.closePath();
-  ctx.strokeStyle = '#F0C060';
+  // Borde luminoso
+  ctx.save();
+  ctx.shadowColor = 'rgba(255,214,130,0.7)';
+  ctx.shadowBlur = 12;
+  tracePath();
+  ctx.strokeStyle = '#FFD682';
   ctx.lineWidth = 2.5;
-  ctx.shadowColor = 'rgba(240,192,96,0.5)';
-  ctx.shadowBlur = 8;
+  ctx.lineJoin = 'round';
   ctx.stroke();
-  ctx.shadowColor = 'transparent';
-  ctx.shadowBlur = 0;
+  ctx.restore();
 
-  // ── Puntos ──
+  // ═══ VÉRTICES ═══
   pts.forEach(p => {
-    const glowGrad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 14);
-    glowGrad.addColorStop(0, 'rgba(240,192,96,0.45)');
-    glowGrad.addColorStop(1, 'rgba(240,192,96,0)');
+    const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 15);
+    g.addColorStop(0, 'rgba(255,214,130,0.5)');
+    g.addColorStop(1, 'rgba(255,214,130,0)');
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 14, 0, Math.PI * 2);
-    ctx.fillStyle = glowGrad;
+    ctx.arc(p.x, p.y, 15, 0, Math.PI * 2);
+    ctx.fillStyle = g;
     ctx.fill();
 
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
-    ctx.fillStyle = '#F0C060';
+    ctx.arc(p.x, p.y, 5.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#FFD682';
     ctx.fill();
     ctx.strokeStyle = '#1A1208';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.5;
     ctx.stroke();
-
-    if (p.score > 0) {
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = '700 12px "Space Grotesk", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'bottom';
-      ctx.fillText(p.score, p.x, p.y - 10);
-    }
   });
 
-  // ── Labels centradas en el borde ──
-  for (let i = 0; i < total; i++) {
-    const donKey = dones[i];
-    const angle = (Math.PI * 2 / total) * i - Math.PI / 2;
-    const lx = cx + labelDist * Math.cos(angle);
-    const ly = cy + labelDist * Math.sin(angle);
-    const nombre = nombresCortos[donKey] || donKey;
-    const lines = nombre.split('\n');
+  // ═══ LABELS + SCORE (alineación radial inteligente) ═══
+  pts.forEach(p => {
+    const nombre = nombres[p.key];
+    const ux = Math.cos(p.angle);
+    const uy = Math.sin(p.angle);
+    const lx = cx + (radius + gap) * ux;
+    const ly = cy + (radius + gap) * uy;
 
-    ctx.font = '700 12px "Space Grotesk", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    // Alinear según posición: derecha→left, izquierda→right, arriba/abajo→center
+    let align = 'center';
+    if (ux > 0.25) align = 'left';
+    else if (ux < -0.25) align = 'right';
 
-    const maxW = Math.max(...lines.map(l => ctx.measureText(l).width));
-    const lineH = 15;
-    const totalH = lines.length * lineH;
-    const padX = 10;
-    const padY = 4;
+    let baseline = 'middle';
+    if (Math.abs(ux) < 0.25) baseline = uy < 0 ? 'bottom' : 'top';
 
-    // Clip label position to stay inside canvas
-    const boxLeft = Math.max(4, lx - maxW/2 - padX);
-    const boxTop = Math.max(4, ly - totalH/2 - padY);
-    const boxRight = Math.min(size - 4, boxLeft + maxW + padX * 2);
-    const boxBottom = Math.min(size - 4, boxTop + totalH + padY * 2);
+    ctx.textAlign = align;
+    ctx.textBaseline = baseline;
 
-    ctx.fillStyle = 'rgba(26,18,8,0.8)';
-    ctx.fillRect(boxLeft, boxTop, boxRight - boxLeft, boxBottom - boxTop);
+    // Nombre
+    ctx.font = FONT_LABEL;
+    ctx.fillStyle = p.score >= 10 ? '#FFD682' : p.score >= 5 ? '#C4B49A' : '#7A6A52';
+    ctx.fillText(nombre, lx, ly);
 
-    lines.forEach((line, li) => {
-      ctx.fillStyle = '#D4C4A0';
-      ctx.fillText(line, lx, ly - (lines.length - 1) * lineH/2 + li * lineH);
-    });
-  }
+    // Score debajo
+    const offY = baseline === 'bottom' ? -15 : baseline === 'top' ? 15 : 14;
+    ctx.font = '700 10px "Space Grotesk", sans-serif';
+    ctx.fillStyle = '#C9922A';
+    ctx.textBaseline = baseline === 'middle' ? 'middle' : baseline;
+    ctx.fillText(p.score + '/15', lx, ly + offY);
+  });
 }
 
 function calcularResultados() {
