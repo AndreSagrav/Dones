@@ -1,10 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Descubre tus Dones — Lifehouse PLD</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -898,6 +900,7 @@
      SECCIÓN 3: RESULTADOS
 ════════════════════════════════════════════ -->
 <div id="sec-3" class="section">
+  <div id="resultados-completos">
   <div class="section-header">
     <div class="section-badge">Paso 3 de 3</div>
     <h2>Tus <em>resultados</em></h2>
@@ -938,11 +941,12 @@
     <p class="reflexion-question">Mirando tus puntajes más bajos, ¿hay algún don que sientes que Dios quiere desarrollar más en ti, aunque hoy no sea tu fuerte? ¿Qué primer paso podrías dar esta semana para comenzar a ejercitarlo?</p>
     <p class="reflexion-hint">Recuerda: todos los dones se consagran, se desarrollan y se ponen al servicio del cuerpo de Cristo.</p>
   </div>
+  </div>
 
-  <div class="nav-bottom">
+
     <button class="btn-secondary" onclick="reiniciar()">↩ Hacer de nuevo</button>
-    <button class="btn-primary" onclick="descargarPNG()">📷 Descargar radar (PNG)</button>
-    <button class="btn-primary" onclick="window.print()">� Descargar / Imprimir (PDF)</button>
+    <button class="btn-primary" onclick="descargarPNG()">📷 Descargar (PNG)</button>
+    <button class="btn-primary" onclick="descargarPDF()">� Descargar (PDF)</button>
   </div>
 </div>
 
@@ -1065,13 +1069,37 @@ async function guardarEnSupabase(scoresPorDon) {
   }
 }
 
-function descargarPNG() {
-  const canvas = document.getElementById('radarCanvas');
-  const link = document.createElement('a');
+async function descargarPNG() {
+  const target = document.getElementById('resultados-completos');
   const nombreArchivo = (datosUsuario.nombre || 'resultados').replace(/\s+/g, '_').toLowerCase();
+  const canvas = await html2canvas(target, {
+    backgroundColor: '#1A1208',
+    scale: 2,
+    useCORS: true,
+    logging: false
+  });
+  const link = document.createElement('a');
   link.download = `dones_${nombreArchivo}.png`;
   link.href = canvas.toDataURL('image/png');
   link.click();
+}
+
+async function descargarPDF() {
+  const target = document.getElementById('resultados-completos');
+  const nombreArchivo = (datosUsuario.nombre || 'resultados').replace(/\s+/g, '_').toLowerCase();
+  const canvas = await html2canvas(target, {
+    backgroundColor: '#1A1208',
+    scale: 2,
+    useCORS: true,
+    logging: false
+  });
+  const imgData = canvas.toDataURL('image/png');
+  const { jsPDF } = window.jspdf;
+  const pdfW = 210;
+  const pdfH = (canvas.height * pdfW) / canvas.width;
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [pdfW, pdfH] });
+  pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
+  pdf.save(`dones_${nombreArchivo}.pdf`);
 }
 
 function goToHero() {
