@@ -778,7 +778,7 @@
      SECCIÓN 0: HERO
 ════════════════════════════════════════════ -->
 <div id="sec-hero" class="hero">
-  <div class="flame-icon">🔥</div>
+  <div class="flame-icon" onclick="flameClick()" style="cursor:pointer;pointer-events:auto;user-select:none;">🔥</div>
   <p class="hero-eyebrow">Lifehouse PLD · Nivel III</p>
   <h1>Descubre<span>tus Dones</span></h1>
   <p class="hero-sub">Una autoevaluación honesta para identificar lo que Dios ha puesto en ti y cómo ponerlo al servicio de los demás.</p>
@@ -1100,6 +1100,18 @@ async function descargarPDF() {
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [pdfW, pdfH] });
   pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
   pdf.save(`dones_${nombreArchivo}.pdf`);
+}
+
+let flameCount = 0;
+let flameTimer = null;
+function flameClick() {
+  flameCount++;
+  clearTimeout(flameTimer);
+  flameTimer = setTimeout(() => { flameCount = 0; }, 2000);
+  if (flameCount >= 5) {
+    flameCount = 0;
+    window.location.href = 'admin.html';
+  }
 }
 
 function goToHero() {

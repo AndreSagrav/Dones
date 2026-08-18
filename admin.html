@@ -595,6 +595,10 @@
       </div>
     </div>
 
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h3 style="color:var(--gold);">Respuestas recibidas</h3>
+      <button class="btn btn-sm" onclick="borrarTodosResultados()" style="background:#8B2C2C;color:#fff;">🗑 Borrar todo</button>
+    </div>
     <div class="table-wrap">
       <table>
         <thead>
@@ -706,6 +710,25 @@ if (sessionStorage.getItem('adminAuth') === 'true') {
   document.getElementById('loginWrap').style.display = 'none';
   document.getElementById('dashboard').classList.add('visible');
   cargarResultados();
+}
+
+async function borrarTodosResultados() {
+  if (!confirm('¿Borrar TODOS los resultados? Esta acción no se puede deshacer.')) return;
+  if (!confirm('Última confirmación: ¿Está seguro? Se eliminarán todos los registros.')) return;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/resultados?id=gte.0`, {
+      method: 'DELETE',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+      }
+    });
+    await cargarResultados();
+    alert('Todos los resultados han sido borrados.');
+  } catch (e) {
+    console.error('Error borrando resultados:', e);
+    alert('Error al borrar. Revise la consola.');
+  }
 }
 
 async function cargarResultados() {
