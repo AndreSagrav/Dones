@@ -693,6 +693,8 @@ function login() {
     document.getElementById('loginWrap').style.display = 'none';
     document.getElementById('dashboard').classList.add('visible');
     cargarResultados();
+    iniciarRealtime();
+    iniciarPolling();
   } else {
     err.textContent = 'Contraseña incorrecta.';
   }
@@ -710,6 +712,66 @@ if (sessionStorage.getItem('adminAuth') === 'true') {
   document.getElementById('loginWrap').style.display = 'none';
   document.getElementById('dashboard').classList.add('visible');
   cargarResultados();
+  iniciarRealtime();
+  iniciarPolling();
+}
+
+// ── Realtime: recargar cuando hay cambios ──
+let realtimeSocket = null;
+let reconnectTimer = null;
+
+function iniciarRealtime() {
+  // Usar WebSocket nativo de Supabase Realtime
+  const wsUrl = `wss://hexrnglihkebatlshzmg.supabase.co/realtime/v1/websocket?apikey=${SUPABASE_KEY}&vsn=1.0.0`;
+  
+  try {
+    realtimeSocket = new WebSocket(wsUrl);
+    
+    realtimeSocket.onopen = () => {
+      console.log('Realtime conectado');
+      // Suscribirse a cambios en tabla resultados
+      const msg = {
+        topic: 'realtime:public.resultados',
+        event: 'phx_join',
+        payload: {},
+        ref: '1'
+      };
+      realtimeSocket.send(JSON.stringify(msg));
+    };
+    
+    realtimeSocket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        // Si hay un evento de INSERT/UPDATE/DELETE, recargar
+        if (data.event === 'INSERT' || data.event === 'UPDATE' || data.event === 'DELETE' || data.type === 'INSERT' || data.type === 'UPDATE' || data.type === 'DELETE') {
+          console.log('Cambio detectado:', data.event || data.type);
+          cargarResultados();
+        }
+      } catch (e) {}
+    };
+    
+    realtimeSocket.onclose = () => {
+      console.log('Realtime desconectado, reintentando en 3s...');
+      clearTimeout(reconnectTimer);
+      reconnectTimer = setTimeout(iniciarRealtime, 3000);
+    };
+    
+    realtimeSocket.onerror = (e) => {
+      console.error('Error Realtime:', e);
+    };
+  } catch (e) {
+    console.error('No se pudo iniciar Realtime:', e);
+  }
+}
+
+// Polling como fallback (cada 10s)
+let pollTimer = null;
+function iniciarPolling() {
+  pollTimer = setInterval(async () => {
+    if (sessionStorage.getItem('adminAuth') === 'true') {
+      await cargarResultados();
+    }
+  }, 10000);
 }
 
 async function borrarTodosResultados() {
